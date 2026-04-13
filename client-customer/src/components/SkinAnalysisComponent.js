@@ -133,21 +133,27 @@ class SkinAnalysis extends Component {
     
     if (this._faceMesh && this.videoRef.current) {
         this.setState({ isCameraStarted: true, error: '' });
-        // eslint-disable-next-line no-undef
-        const camera = new Camera(this.videoRef.current, {
-            onFrame: async () => {
-                try {
-                  if (this._faceMesh) await this._faceMesh.send({image: this.videoRef.current});
-                } catch(e) {}
-            },
-            width: 640,
-            height: 480
-        });
-        camera.start().catch(err => {
-            console.error("Camera AI Error:", err);
+        try {
+            // eslint-disable-next-line no-undef
+            const camera = new Camera(this.videoRef.current, {
+                onFrame: async () => {
+                    try {
+                      if (this._faceMesh) await this._faceMesh.send({image: this.videoRef.current});
+                    } catch(e) {}
+                },
+                width: 640,
+                height: 480
+            });
+            this._camera = camera;
+            camera.start().catch(err => {
+                console.error("Camera AI Start Error:", err);
+                this.setState({ error: 'AI Camera không khởi động được: ' + err.message });
+                this.startStandardCamera();
+            });
+        } catch (e) {
+            console.error("Camera Constructor Error:", e);
             this.startStandardCamera();
-        });
-        this._camera = camera;
+        }
     } else {
         this.startStandardCamera();
     }
