@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "install-all": "npm install",
-    "build": "npm run build-customer && npm run build-admin && mkdir dist && cp -r client-customer/build/. dist/ && mkdir dist/admin && cp -r client-admin/build/. dist/admin/",
+    "build": "npm run build-customer && npm run build-admin && mkdir -p dist/admin && cp -r client-customer/build/. dist/ && cp -r client-admin/build/. dist/admin/",
     "build-customer": "cd client-customer && cross-env CI=false npm run build",
     "build-admin": "cd client-admin && cross-env CI=false npm run build"
   },
