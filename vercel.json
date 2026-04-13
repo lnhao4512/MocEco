@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://mocecopure-server.onrender.com/api/$1"
+      "destination": "https://moceco.onrender.com/api/$1"
     },
     {
       "source": "/(.*)",
