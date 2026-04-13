@@ -8,6 +8,10 @@
       "destination": "https://moceco.onrender.com/api/$1"
     },
     {
+      "source": "/uploads/(.*)",
+      "destination": "https://moceco.onrender.com/uploads/$1"
+    },
+    {
       "source": "/admin/(.*)",
       "destination": "/admin/index.html"
     },
