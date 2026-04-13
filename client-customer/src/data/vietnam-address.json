@@ -1,0 +1,100 @@
+[
+  {
+    "code": "HN", "name": "Hà Nội",
+    "districts": [
+      { "code": "HN-HK", "name": "Hoàn Kiếm", "wards": ["Hàng Bạc","Hàng Bồ","Hàng Bông","Hàng Buồm","Hàng Đào","Hàng Gai","Hàng Mã","Hàng Trống","Lý Thái Tổ","Phan Chu Trinh","Tràng Tiền"] },
+      { "code": "HN-HBT", "name": "Hai Bà Trưng", "wards": ["Bạch Đằng","Bách Khoa","Bùi Thị Xuân","Cầu Dền","Đồng Nhân","Đồng Tâm","Lê Đại Hành","Minh Khai","Nguyễn Du","Phạm Đình Hổ","Phố Huế","Quỳnh Lôi","Quỳnh Mai","Thanh Nhàn","Trương Định","Vĩnh Tuy"] },
+      { "code": "HN-DD", "name": "Đống Đa", "wards": ["Cát Linh","Hàng Bột","Khâm Thiên","Kim Liên","Nam Đồng","Ngã Tư Sở","Ô Chợ Dừa","Phú Thượng","Phương Liên","Phương Mai","Quốc Tử Giám","Thịnh Quang","Thổ Quan","Trung Liệt","Văn Chương","Văn Miếu"] },
+      { "code": "HN-CG", "name": "Cầu Giấy", "wards": ["Dịch Vọng","Dịch Vọng Hậu","Mai Dịch","Nghĩa Đô","Nghĩa Tân","Quan Hoa","Trung Hòa","Yên Hòa"] },
+      { "code": "HN-TH", "name": "Thanh Xuân", "wards": ["Hạ Đình","Khương Đình","Khương Mai","Khương Trung","Kim Giang","Nhân Chính","Phương Liệt","Thanh Xuân Bắc","Thanh Xuân Nam","Thanh Xuân Trung","Thượng Đình"] },
+      { "code": "HN-NTL", "name": "Nam Từ Liêm", "wards": ["Cầu Diễn","Đại Mỗ","Mễ Trì","Mỹ Đình 1","Mỹ Đình 2","Phú Đô","Phương Canh","Tây Mỗ","Trung Văn","Xuân Phương"] },
+      { "code": "HN-LB", "name": "Long Biên", "wards": ["Bồ Đề","Cự Khối","Đức Giang","Gia Thụy","Giang Biên","Long Biên","Ngọc Lâm","Ngọc Thụy","Phúc Đồng","Phúc Lợi","Sài Đồng","Thạch Bàn","Thượng Thanh","Việt Hưng"] }
+    ]
+  },
+  {
+    "code": "HCM", "name": "TP. Hồ Chí Minh",
+    "districts": [
+      { "code": "HCM-Q1", "name": "Quận 1", "wards": ["Bến Nghé","Bến Thành","Cầu Kho","Cô Giang","Cầu Ông Lãnh","Đa Kao","Nguyễn Cư Trinh","Nguyễn Thái Bình","Phạm Ngũ Lão","Tân Định"] },
+      { "code": "HCM-Q3", "name": "Quận 3", "wards": ["Phường 1","Phường 2","Phường 3","Phường 4","Phường 5","Phường 6","Phường 7","Phường 8","Phường 9","Phường 10","Phường 11","Phường 12","Phường 13","Phường 14","Võ Thị Sáu"] },
+      { "code": "HCM-Q7", "name": "Quận 7", "wards": ["Bình Thuận","Phú Mỹ","Phú Thuận","Tân Hưng","Tân Kiểng","Tân Phong","Tân Phú","Tân Quy"] },
+      { "code": "HCM-BT", "name": "Bình Thạnh", "wards": ["Phường 1","Phường 2","Phường 3","Phường 5","Phường 6","Phường 7","Phường 11","Phường 12","Phường 13","Phường 14","Phường 15","Phường 17","Phường 19","Phường 21","Phường 22","Phường 24","Phường 25","Phường 26","Phường 27","Phường 28"] },
+      { "code": "HCM-PN", "name": "Phú Nhuận", "wards": ["Phường 1","Phường 2","Phường 3","Phường 4","Phường 5","Phường 7","Phường 8","Phường 9","Phường 10","Phường 11","Phường 12","Phường 13","Phường 14","Phường 15","Phường 17"] },
+      { "code": "HCM-TB", "name": "Tân Bình", "wards": ["Phường 1","Phường 2","Phường 3","Phường 4","Phường 5","Phường 6","Phường 7","Phường 8","Phường 9","Phường 10","Phường 11","Phường 12","Phường 13","Phường 14","Phường 15"] },
+      { "code": "HCM-GV", "name": "Gò Vấp", "wards": ["Phường 1","Phường 3","Phường 4","Phường 5","Phường 6","Phường 7","Phường 8","Phường 9","Phường 10","Phường 11","Phường 12","Phường 13","Phường 14","Phường 15","Phường 16","Phường 17"] }
+    ]
+  },
+  {
+    "code": "DN", "name": "Đà Nẵng",
+    "districts": [
+      { "code": "DN-HK", "name": "Hải Châu", "wards": ["Bình Hiên","Bình Thuận","Hải Châu 1","Hải Châu 2","Hòa Cường Bắc","Hòa Cường Nam","Hòa Thuận Đông","Hòa Thuận Tây","Nam Dương","Phước Ninh","Thạch Thang","Thanh Bình","Thuận Phước"] },
+      { "code": "DN-TK", "name": "Thanh Khê", "wards": ["An Khê","Chính Gián","Hòa Khê","Tam Thuận","Tân Chính","Thanh Khê Đông","Thanh Khê Tây","Thạc Gián","Vĩnh Trung","Xuân Hà"] },
+      { "code": "DN-SN", "name": "Sơn Trà", "wards": ["An Hải Bắc","An Hải Đông","An Hải Tây","Mân Thái","Nại Hiên Đông","Phước Mỹ","Thọ Quang"] },
+      { "code": "DN-NGH", "name": "Ngũ Hành Sơn", "wards": ["Hòa Hải","Hòa Quý","Khuê Mỹ","Mỹ An"] },
+      { "code": "DN-CL", "name": "Cẩm Lệ", "wards": ["Hòa An","Hòa Phát","Hòa Thọ Đông","Hòa Thọ Tây","Hòa Xuân","Khuê Trung"] }
+    ]
+  },
+  {
+    "code": "HP", "name": "Hải Phòng",
+    "districts": [
+      { "code": "HP-HB", "name": "Hồng Bàng", "wards": ["Hoàng Văn Thụ","Minh Khai","Phan Bội Châu","Phạm Hồng Thái","Quán Toan","Sở Dầu","Thượng Lý","Trại Chuối"] },
+      { "code": "HP-LB", "name": "Lê Chân", "wards": ["An Biên","An Dương","Cát Dài","Đông Hải","Hàng Kênh","Lam Sơn","Nghĩa Xá","Niệm Nghĩa","Trần Nguyên Hãn","Vĩnh Niệm"] },
+      { "code": "HP-NN", "name": "Ngô Quyền", "wards": ["Cầu Đất","Đằng Giang","Đằng Lâm","Đông Hải 1","Đông Hải 2","Lạc Viên","Lê Lợi","Máy Chai","Máy Tơ","Vạn Mỹ"] }
+    ]
+  },
+  {
+    "code": "CT", "name": "Cần Thơ",
+    "districts": [
+      { "code": "CT-NK", "name": "Ninh Kiều", "wards": ["An Bình","An Cư","An Hòa","An Khánh","An Nghiệp","An Phú","Cái Khế","Hưng Lợi","Tân An","Xuân Khánh"] },
+      { "code": "CT-BT", "name": "Bình Thủy", "wards": ["An Thới","Bình Thủy","Bùi Hữu Nghĩa","Long Hòa","Long Tuyền","Thới An Đông","Trà An","Trà Nóc"] }
+    ]
+  },
+  {
+    "code": "BDG", "name": "Bình Dương",
+    "districts": [
+      { "code": "BDG-TDM", "name": "TP. Thủ Dầu Một", "wards": ["Chánh Mỹ","Chánh Nghĩa","Định Hòa","Hiệp An","Hiệp Thành","Hòa Phú","Phú Cường","Phú Hòa","Phú Lợi","Phú Mỹ","Phú Tân","Phú Thọ","Tân An","Tương Bình Hiệp"] },
+      { "code": "BDG-TAN", "name": "Thuận An", "wards": ["An Phú","An Sơn","An Thạnh","Bình Chuẩn","Bình Hòa","Bình Nhâm","Hưng Định","Thuận Giao","Vĩnh Phú"] }
+    ]
+  },
+  {
+    "code": "BH", "name": "Biên Hòa (Đồng Nai)",
+    "districts": [
+      { "code": "BH-Q1", "name": "TP. Biên Hòa", "wards": ["An Bình","Bình Đa","Bửu Hòa","Bửu Long","Hóa An","Long Bình","Long Bình Tân","Phước Tân","Tân Biên","Tân Hiệp","Tân Hòa","Tân Mai","Tân Phong","Tân Tiến","Tân Vạn","Thống Nhất","Trung Dũng"] }
+    ]
+  },
+  {
+    "code": "HUE", "name": "Huế (Thừa Thiên Huế)",
+    "districts": [
+      { "code": "HUE-Q1", "name": "TP. Huế", "wards": ["An Cựu","An Đông","An Hòa","An Tây","Hương Long","Hương Sơ","Kim Long","Phú Bình","Phú Cát","Phú Hậu","Phú Hiệp","Phú Hội","Phú Nhuận","Phú Thuận","Phước Vĩnh","Tây Lộc","Thủy Biều","Thủy Xuân","Trường An","Vĩnh Ninh","Vỹ Dạ","Xuân Phú"] }
+    ]
+  },
+  {
+    "code": "QN", "name": "Quy Nhơn (Bình Định)",
+    "districts": [
+      { "code": "QN-Q1", "name": "TP. Quy Nhơn", "wards": ["Bùi Thị Xuân","Đống Đa","Ghềnh Ráng","Hải Cảng","Lê Hồng Phong","Lê Lợi","Lý Thường Kiệt","Ngô Mây","Nguyễn Văn Cừ","Nhơn Bình","Nhơn Phú","Quang Trung","Thị Nại","Thống Nhất","Trần Hưng Đạo","Trần Phú"] }
+    ]
+  },
+  {
+    "code": "NT", "name": "Nha Trang (Khánh Hòa)",
+    "districts": [
+      { "code": "NT-Q1", "name": "TP. Nha Trang", "wards": ["Lộc Thọ","Ngọc Hiệp","Phong Phú","Phước Hải","Phước Long","Phước Tiến","Phước Tân","Tân Lập","Vạn Thắng","Vạn Thạnh","Vĩnh Hải","Vĩnh Hòa","Vĩnh Nguyên","Vĩnh Phước","Vĩnh Thọ","Vĩnh Trường","Xương Huân"] }
+    ]
+  },
+  {
+    "code": "VT", "name": "Vũng Tàu (Bà Rịa - Vũng Tàu)",
+    "districts": [
+      { "code": "VT-Q1", "name": "TP. Vũng Tàu", "wards": ["Nguyễn An Ninh","Phước Thắng","Phước Trung","Rạch Dừa","Thắng Nhất","Thắng Nhì","Thắng Tam","Vũng Tàu"] }
+    ]
+  },
+  {
+    "code": "LC", "name": "Long An",
+    "districts": [
+      { "code": "LC-TA", "name": "Tân An", "wards": ["Phường 1","Phường 2","Phường 3","Phường 4","Phường 5","Phường 6","Phường 7","Tân Khánh"] }
+    ]
+  },
+  {
+    "code": "TG", "name": "Tiền Giang",
+    "districts": [
+      { "code": "TG-MY", "name": "Mỹ Tho", "wards": ["Phường 1","Phường 2","Phường 3","Phường 4","Phường 5","Phường 6","Phường 7","Phường 8","Phường 9","Phường 10","Tân Long"] }
+    ]
+  }
+]
