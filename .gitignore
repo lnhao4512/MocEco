@@ -15,7 +15,7 @@ dist/
 server/uploads/
 
 # Models (THƯ MỤC NẶNG - KHÔNG ĐƯỢC UP)
-models/
+/models/
 *.keras
 *.h5
 *.h1
