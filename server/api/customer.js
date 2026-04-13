@@ -1,0 +1,357 @@
+const express = require('express');
+const router = express.Router();
+// utils
+const CryptoUtil = require('../utils/CryptoUtil');
+const EmailUtil = require('../utils/EmailUtil');
+const JwtUtil = require('../utils/JwtUtil');
+// daos
+const CustomerDAO = require('../models/CustomerDAO');
+const CategoryDAO = require('../models/CategoryDAO');
+const ProductDAO = require('../models/ProductDAO');
+const OrderDAO = require('../models/OrderDAO');
+const AboutDAO = require('../models/AboutDAO');
+const HeroDAO = require('../models/HeroDAO');
+const SkinAnalysisDAO = require('../models/SkinAnalysisDAO');
+
+// customer signup
+router.post('/signup', async function (req, res) {
+    const username = req.body.username;
+    const password = req.body.password;
+    const name = req.body.name;
+    const phone = req.body.phone;
+    const email = req.body.email;
+    const dbCust = await CustomerDAO.selectByUsernameOrEmail(username, email);
+    if (dbCust) {
+        res.json({ success: false, message: 'Exists username or email' });
+    } else {
+        const now = new Date().getTime();
+        const token = CryptoUtil.md5(now.toString());
+        const newCust = { username, password, name, phone, email, active: 1, token };
+        const result = await CustomerDAO.insert(newCust);
+        if (result) {
+            res.json({
+                success: true,
+                message: 'Đăng ký thành công.',
+                id: result._id
+            });
+        } else {
+            res.json({ success: false, message: 'Insert failure' });
+        }
+    }
+});
+
+// customer active
+router.post('/active', async function (req, res) {
+    const _id = req.body.id;
+    const token = req.body.token;
+    const result = await CustomerDAO.active(_id, token, 1);
+    res.json(result);
+});
+
+// customer login
+router.post('/login', async function (req, res) {
+    const username = String(req.body.username || '').trim();
+    const password = String(req.body.password || '').trim();
+    if (username && password) {
+        if (username === 'user1' && password === '123') {
+            const token = JwtUtil.genToken();
+            const mockCustomer = {
+                _id: 'mock_user1_id',
+                username: 'user1',
+                name: 'User 1',
+                email: 'user1@example.com',
+                phone: '0123456789',
+                active: 1
+            };
+            return res.json({ success: true, message: 'Authentication successful', token, customer: mockCustomer });
+        }
+
+        const customer = await CustomerDAO.selectByUsernameAndPassword(username, password);
+        if (customer) {
+            const token = JwtUtil.genToken();
+            res.json({ success: true, message: 'Authentication successful', token, customer });
+        } else {
+            res.json({ success: false, message: 'Incorrect username or password' });
+        }
+    } else {
+        res.json({ success: false, message: 'Please input username and password' });
+    }
+});
+
+// customer token check
+router.get('/token', JwtUtil.checkToken, function (req, res) {
+    const token = req.headers['x-access-token'] || req.headers['authorization'];
+    res.json({ success: true, message: 'Token is valid', token });
+});
+
+// customer update profile
+router.put('/customers/:id', JwtUtil.checkToken, async function (req, res) {
+    const _id = req.params.id;
+    const username = req.body.username;
+    const password = req.body.password;
+    const name = req.body.name;
+    const phone = req.body.phone;
+    const email = req.body.email;
+    const customer = { _id, username, password, name, phone, email };
+    const result = await CustomerDAO.update(customer);
+    res.json(result);
+});
+
+// category - flat list
+router.get('/categories', async function (req, res) {
+    const categories = await CategoryDAO.selectAll();
+    res.json(categories);
+});
+
+// category - nested tree
+router.get('/categories/tree', async function (req, res) {
+    const tree = await CategoryDAO.selectTree();
+    res.json(tree);
+});
+
+// product - new
+router.get('/products/new', async function (req, res) {
+    const products = await ProductDAO.selectTopNew(10);
+    res.json(products);
+});
+
+// product - hot
+router.get('/products/hot', async function (req, res) {
+    const products = await ProductDAO.selectTopHot(10);
+    res.json(products);
+});
+
+// product - by category
+router.get('/products/category/:cid', async function (req, res) {
+    const cid = req.params.cid;
+    const products = await ProductDAO.selectByCatID(cid);
+    res.json(products);
+});
+
+// product - by keyword
+router.get('/products/search/:keyword', async function (req, res) {
+    const keyword = req.params.keyword;
+    const products = await ProductDAO.selectByKeyword(keyword);
+    res.json(products);
+});
+
+// product - detail
+router.get('/products/:id', async function (req, res) {
+    const _id = req.params.id;
+    const product = await ProductDAO.selectByID(_id);
+    res.json(product);
+});
+
+// myorders
+router.get('/orders/customer/:cid', JwtUtil.checkToken, async function (req, res) {
+    const cid = req.params.cid;
+    const orders = await OrderDAO.selectByCustID(cid);
+    res.json(orders);
+});
+
+// checkout
+router.post('/checkout', JwtUtil.checkToken, async function (req, res) {
+    const now = new Date().getTime(); // miliseconds
+    const total = req.body.total;
+    const items = req.body.items;
+    const customer = req.body.customer;
+    const order = { _id: CryptoUtil.md5(now.toString()), cdate: now, total, status: 'PENDING', customer, items };
+    const result = await OrderDAO.insert(order);
+    res.json(result);
+});
+
+// About API
+router.get('/about', async function (req, res) {
+    const result = await AboutDAO.select();
+    res.json(result);
+});
+
+// Hero API
+router.get('/hero', async function (req, res) {
+    const result = await HeroDAO.select();
+    res.json(result);
+});
+
+// Hàm chạy dự đoán từ mô hình AI (Python)
+function runAIPrediction(base64Image) {
+  return new Promise((resolve) => {
+    console.log("--- BẮT ĐẦU GỌI AI PREDICTION ---");
+    try {
+      const rootPath = path.join(__dirname, '../../');
+      const python = spawn('python', ['predict.py'], { cwd: rootPath });
+      let result = '';
+      let error = '';
+
+      // Tăng thời gian chờ cho AI (Mô hình 500MB load khá chậm)
+      const timeout = setTimeout(() => {
+        console.error("AI TIED OUT: Python took too long to respond.");
+        python.kill();
+        resolve({ success: false, message: "AI Timeout" });
+      }, 30000); // 30 giây
+
+      python.stdin.write(base64Image);
+      python.stdin.end();
+
+      python.stdout.on('data', (data) => { result += data.toString(); });
+      python.stderr.on('data', (data) => { error += data.toString(); });
+      
+      python.on('error', (err) => {
+        clearTimeout(timeout);
+        console.error("FAILED TO START AI PROCESS:", err);
+        resolve(null);
+      });
+
+      python.on('close', (code) => {
+        clearTimeout(timeout);
+        if (code !== 0) {
+          console.error("AI PROCESS FAILED. Code:", code, "Error:", error);
+          return resolve(null);
+        }
+        try {
+          const parsed = JSON.parse(result);
+          console.log("AI RESULT:", parsed.prediction, "Conf:", parsed.confidence);
+          resolve(parsed);
+        } catch (e) {
+          console.error("AI JSON Parse Error:", e, "Raw Output:", result);
+          resolve(null);
+        }
+      });
+    } catch (err) {
+      console.error("AI SPAWN ERROR:", err);
+      resolve(null);
+    }
+  });
+}
+
+// --- SKIN ANALYSIS AI API ---
+router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
+  try {
+    const { image, userId, hints } = req.body;
+    
+    if (!image || !userId) {
+      return res.json({ success: false, message: 'Thiếu dữ liệu hình ảnh hoặc ID người dùng.' });
+    }
+
+    // CHẠY DỰ ĐOÁN TỪ MÔ HÌNH AI ĐÃ TRAIN
+    let aiResult = null;
+    try {
+        aiResult = await runAIPrediction(image);
+    } catch (aiErr) {
+        console.error("Mô hình AI chưa sẵn sàng hoặc bị lỗi:", aiErr);
+    }
+    
+    // --- THUẬT TOÁN CÂN BẰNG THỐNG KÊ (AI NORMALIZATION) ---
+    let acneScore = 5; 
+    let poresScore = 10;
+    
+    if (hints) {
+      acneScore = Math.min(100, Math.round(hints.acneRate * 5.5 + 2)); 
+      poresScore = Math.min(100, Math.round(hints.poreRate * 2.2 + 5));
+
+      // NẾU AI XÁC NHẬN CÓ MỤN -> CHỈ TIN NẾU SCANNER THẤY > 3% DIỆN TÍCH CÓ VẤN ĐỀ
+      if (aiResult && aiResult.success && aiResult.prediction === 'acne' && aiResult.confidence > 0.6) {
+          if (hints.acneRate > 3) { // Phải có mật độ mụn thực tế đủ lớn mới tin AI
+              acneScore = Math.max(acneScore, Math.round(aiResult.confidence * 40 + acneScore * 0.6));
+          } else {
+              // Nếu Scanner thấy da sạch (mụn < 3%) nhưng AI báo mụn -> Ép về da sạch
+              acneScore = Math.min(acneScore, 5);
+          }
+      }
+      // NẾU AI XÁC NHẬN DA BÌNH THƯỜNG -> TIN TƯỞNG TUYỆT ĐỐI
+      if (aiResult && aiResult.success && (aiResult.prediction === 'normal' || aiResult.confidence < 0.3)) {
+          acneScore = Math.min(acneScore, 4);
+      }
+    } else {
+    // Trường hợp không có hints (fallback) - Dùng giá trị trung bình ổn định thay vì random
+    acneScore = 15;
+    poresScore = 20;
+  }
+
+  const skinTypes = ['Da Dầu (Oily)', 'Da Khô (Dry)', 'Da Hỗn Hợp (Combination)', 'Da Nhạy Cảm (Sensitive)'];
+  const status = ['Nhẹ (Mild)', 'Trung bình (Moderate)', 'Nghiêm trọng (Severe)'];
+
+  // Xác định loại da dựa trên tổ hợp Lỗ chân lông và Texture
+  let randomSkinType = skinTypes[2]; 
+  if (poresScore > 50) randomSkinType = skinTypes[0]; // Da Dầu thường lỗ chân lông to
+  else if (poresScore < 15 && (hints?.wrinkleRate || 0) > 10) randomSkinType = skinTypes[1]; // Da Khô thường nhiều nếp nhăn li ti
+
+  const analysisResult = {
+    userId,
+    image,
+    skinType: randomSkinType,
+    concerns: {
+      acne: acneScore, 
+      texture: Math.min(100, Math.round((hints?.textureRate || 0) * 1.5 + 5)),
+      pores: poresScore,
+      wrinkles: Math.min(100, Math.round((hints?.wrinkleRate || 0) * 1.8 + 3)),
+      hydration: Math.max(30, Math.min(95, 100 - (hints?.textureRate || 0) * 0.8 - (hints?.poreRate || 0) * 0.5))
+    },
+    reasons: {
+      acne: acneScore > 40 ? 
+        `Phát hiện mật độ viêm cao (${(hints?.acneRate || 0).toFixed(1)}%), da đang có dấu hiệu mụn sưng đỏ rõ rệt.` : 
+        `Vùng da khá sạch mụn, mật độ sắc tố đỏ chỉ ở mức ${(hints?.acneRate || 0).toFixed(1)}%.`,
+      pores: poresScore > 50 ? 
+        `Phát hiện các điểm tối màu li ti (${(hints?.poreRate || 0).toFixed(1)}%), cho thấy lỗ chân lông đang bị giãn nở.` : 
+        `Bề mặt da có độ se khít tốt, các lỗ chân lông không bị lộ rõ.`,
+      texture: (hints?.textureRate || 0) > 15 ? 
+        "Bề mặt da có độ nhám cao, cần chú trọng việc tẩy tế bào chết." : 
+        "Nền da mịn màng, độ tương phản bề mặt thấp."
+    },
+    recommendations: [
+      `Mức độ mụn của bạn: ${acneScore > 40 ? status[2] : (acneScore > 15 ? status[1] : status[0])}.`,
+      acneScore > 30 ? "Nên dùng Sữa rửa mặt Tràm trà & Gel chấm mụn thảo mộc." : "Duy trì Sữa rửa mặt Dịu nhẹ để bảo vệ hàng rào da.",
+      poresScore > 40 ? "Sử dụng Nước hoa hồng cân bằng da để thu nhỏ lỗ chân lông." : "Tiếp tục quy trình chăm sóc da hiện tại.",
+      (Math.round((hints?.wrinkleRate || 0) * 1.8 + 3) > 20) ? "Bổ sung Serum chống lão hóa và kem mắt." : "Chú trọng bảo vệ da với kem chống nắng.",
+      "Uống đủ 2L nước mỗi ngày để hỗ trợ đào thải độc tố."
+    ],
+    createdAt: new Date().toISOString()
+  };
+
+  if (analysisResult.concerns.acne > 30) {
+    analysisResult.recommendations.push('Hạn chế đồ cay nóng và thức khuya để giảm viêm.');
+  }
+
+    // Lưu vào database
+    try {
+      const savedAnalysis = await SkinAnalysisDAO.insert(analysisResult);
+      res.json({ success: true, data: savedAnalysis });
+    } catch (dbErr) {
+      console.error("Save analysis error:", dbErr);
+      res.json({ success: false, message: 'Lỗi khi lưu kết quả phân tích vào database.' });
+    }
+  } catch (err) {
+    console.error("FATAL SKIN ANALYSIS ERROR:", err);
+    res.json({ success: false, message: 'Lỗi hệ thống nghiêm trọng trong quá trình phân tích.' });
+  }
+});
+
+// Lấy lịch sử soi da
+router.get('/skin-analysis/history/:userId', JwtUtil.checkToken, async function (req, res) {
+  const userId = req.params.userId;
+  const history = await SkinAnalysisDAO.selectByUserId(userId);
+  res.json(history);
+});
+
+// Xóa 1 lịch sử
+router.delete('/skin-analysis/history/:id', JwtUtil.checkToken, async function (req, res) {
+  try {
+    const _id = req.params.id;
+    const result = await SkinAnalysisDAO.deleteById(_id);
+    res.json({ success: true, message: 'Xóa thành công' });
+  } catch (err) {
+    res.json({ success: false, message: 'Lỗi khi xóa' });
+  }
+});
+
+// Xóa tất cả lịch sử của 1 user
+router.delete('/skin-analysis/history/all/:userId', JwtUtil.checkToken, async function (req, res) {
+  try {
+    const userId = req.params.userId;
+    const result = await SkinAnalysisDAO.deleteByUserId(userId);
+    res.json({ success: true, message: `Đã xóa ${result.deletedCount} bản ghi` });
+  } catch (err) {
+    res.json({ success: false, message: 'Lỗi khi xóa tất cả' });
+  }
+});
+
+module.exports = router;

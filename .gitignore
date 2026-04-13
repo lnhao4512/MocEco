@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build and Output
+build/
+output/
+dist/
+.DS_Store
+
+# Environment and Data
+.env
+data/
+.gradio/
+server/uploads/
+
+# Models (THƯ MỤC NẶNG - KHÔNG ĐƯỢC UP)
+models/
+*.keras
+*.h5
+*.h1
+
+# OS specific
+Thumbs.db
+desktop.ini
