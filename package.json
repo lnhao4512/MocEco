@@ -1,4 +1,13 @@
 {
+  "name": "moc-ecopure-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install-all": "npm install && cd client-customer && npm install && cd ../server && npm install",
+    "build-customer": "cd client-customer && npm run build",
+    "start-server": "cd server && npm start",
+    "build": "cd client-customer && cross-env CI=false npm run build"
+  },
   "dependencies": {
     "axios": "^1.13.6",
     "cross-env": "^10.1.0",
