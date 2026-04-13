@@ -1,11 +1,15 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "outputDirectory": "client-customer/build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "https://moceco.onrender.com/api/$1"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/admin/index.html"
     },
     {
       "source": "/(.*)",
