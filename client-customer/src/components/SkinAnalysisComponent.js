@@ -20,7 +20,8 @@ class SkinAnalysis extends Component {
       showHistory: false,
       mode: 'camera', // camera | upload
       aiStatus: 'Hệ thống AI chuẩn bị...',
-      isCameraStarted: false
+      isCameraStarted: false,
+      isInitializingCamera: false
     };
     this.videoRef = React.createRef();
     this.canvasRef = React.createRef();
@@ -131,25 +132,30 @@ class SkinAnalysis extends Component {
   startAICamera = () => {
     this.stopCamera();
     
-    if (this._faceMesh && this.videoRef.current) {
-        this.setState({ isCameraStarted: true, error: '' });
+        this.setState({ isInitializingCamera: true, error: '' });
         try {
-            // eslint-disable-next-line no-undef
-            const camera = new Camera(this.videoRef.current, {
-                onFrame: async () => {
-                    try {
-                      if (this._faceMesh) await this._faceMesh.send({image: this.videoRef.current});
-                    } catch(e) {}
-                },
-                width: 640,
-                height: 480
-            });
-            this._camera = camera;
-            camera.start().catch(err => {
-                console.error("Camera AI Start Error:", err);
-                this.setState({ error: 'AI Camera không khởi động được: ' + err.message });
-                this.startStandardCamera();
-            });
+            // Đợi một chút để video element render xong
+            setTimeout(async () => {
+                if (!this.videoRef.current) return;
+                
+                // eslint-disable-next-line no-undef
+                const camera = new Camera(this.videoRef.current, {
+                    onFrame: async () => {
+                        try {
+                          if (this._faceMesh) await this._faceMesh.send({image: this.videoRef.current});
+                        } catch(e) {}
+                    },
+                    width: 640,
+                    height: 480
+                });
+                this._camera = camera;
+                camera.start().then(() => {
+                    this.setState({ isCameraStarted: true, isInitializingCamera: false });
+                }).catch(err => {
+                    console.error("Camera AI Start Error:", err);
+                    this.startStandardCamera();
+                });
+            }, 500);
         } catch (e) {
             console.error("Camera Constructor Error:", e);
             this.startStandardCamera();
@@ -161,22 +167,27 @@ class SkinAnalysis extends Component {
 
   startStandardCamera = async () => {
     this.stopCamera();
+    this.setState({ isInitializingCamera: true, error: '' });
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
         });
-        if (this.videoRef.current) {
-            this.videoRef.current.srcObject = stream;
-            // Quan trọng: Phải gọi play() sau khi gán stream
-            this.videoRef.current.onloadedmetadata = () => {
-                this.videoRef.current.play();
-                this.setState({ isCameraStarted: true, error: '' });
-            };
-        }
-        this.setState({ stream });
+        this.setState({ stream }, () => {
+            // Đợi React render video element
+            setTimeout(() => {
+                if (this.videoRef.current) {
+                    this.videoRef.current.srcObject = stream;
+                    this.videoRef.current.play();
+                    this.setState({ isCameraStarted: true, isInitializingCamera: false });
+                }
+            }, 500);
+        });
     } catch (e) { 
         console.error("Standard Camera Error:", e);
-        this.setState({ error: 'Không thể truy cập Camera. Vui lòng cấp quyền hoặc đóng ứng dụng khác đang dùng camera.' }); 
+        this.setState({ 
+            isInitializingCamera: false,
+            error: 'Không thể truy cập Camera. Vui lòng cấp quyền hoặc đổi trình duyệt (Khuyên dùng Chrome).' 
+        }); 
     }
   };
 
@@ -188,7 +199,7 @@ class SkinAnalysis extends Component {
   };
 
   switchMode = (mode) => {
-    this.setState({ mode, image: null, result: null, error: '', isCameraStarted: false });
+    this.setState({ mode, image: null, result: null, error: '', isCameraStarted: false, isInitializingCamera: false });
     if (this._camera) { try { this._camera.stop(); } catch(e) {} }
     this.stopCamera();
   };
@@ -497,7 +508,7 @@ class SkinAnalysis extends Component {
           <div className="skin-video-container">
             {mode === 'camera' ? (
                 <>
-                    {this.state.isCameraStarted ? (
+                    {this.state.isInitializingCamera || this.state.isCameraStarted ? (
                         <>
                             <video ref={this.videoRef} autoPlay playsInline className="skin-video" width="640" height="480" />
                             <canvas ref={this.overlayRef} className="skin-overlay" width="640" height="480" />
@@ -509,7 +520,7 @@ class SkinAnalysis extends Component {
                     ) : (
                         <div className="camera-placeholder">
                             <span className="icon">📷</span>
-                            <h3>Sẵn sàng soi da Camerah-X</h3>
+                            <h3>Sẵn sàng soi da Camera AI</h3>
                             <button className="skin-btn-start" onClick={this.startAICamera}>BẮT ĐẦU CAMERA</button>
                         </div>
                     )}
