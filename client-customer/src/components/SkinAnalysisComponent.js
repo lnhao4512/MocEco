@@ -132,6 +132,7 @@ class SkinAnalysis extends Component {
   startAICamera = () => {
     this.stopCamera();
     
+    if (this._faceMesh) {
         this.setState({ isInitializingCamera: true, error: '' });
         try {
             // Đợi một chút để video element render xong
