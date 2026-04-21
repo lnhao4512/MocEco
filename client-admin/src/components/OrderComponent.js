@@ -61,7 +61,8 @@ class Order extends Component {
 
   _initSocket() {
     try {
-      const socket = io('http://localhost:3001', { transports: ['websocket', 'polling'] });
+    const socketUrl = window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin;
+    const socket = io(socketUrl, { transports: ['websocket', 'polling'] });
       socket.on('payment_success', () => {
         // Auto-refresh checkout orders on payment
         this.apiGetCheckoutOrders();

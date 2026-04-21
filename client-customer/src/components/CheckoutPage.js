@@ -113,7 +113,8 @@ class CheckoutPage extends Component {
   _setupSocket() {
     try {
       const { io } = require('socket.io-client');
-      const socket = io('http://localhost:3001', { transports: ['websocket', 'polling'] });
+      const socketUrl = window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin;
+      const socket = io(socketUrl, { transports: ['websocket', 'polling'] });
       socket.on('payment_success', (data) => {
         const { orderId } = this.state;
         if (data.orderId === String(orderId) || data.orderId === orderId) {

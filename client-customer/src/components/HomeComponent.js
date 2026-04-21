@@ -372,7 +372,10 @@ class Home extends Component {
             <div className="fig-procard" key={p._id}>
                 <div className="fig-procard-img">
                     <a href={"/product/" + p._id}>
-                        <img src={"data:image/jpg;base64," + p.image} alt={p.name} />
+                        <img 
+                          src={p.image && (p.image.startsWith('http') || p.image.startsWith('data:')) ? p.image : "data:image/jpg;base64," + p.image} 
+                          alt={p.name} 
+                        />
                     </a>
                 </div>
                 <div className="fig-procard-body">
