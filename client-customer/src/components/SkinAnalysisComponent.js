@@ -510,7 +510,12 @@ class SkinAnalysis extends Component {
                                 <div className="product-usage">{prod.usage}</div>
                               </td>
                               <td className="product-cell action">
-                                <a href={prod.product_url} target="_blank" rel="noreferrer" className="btn-buy-now">Mua ngay</a>
+                                <button 
+                                  className="btn-buy-now" 
+                                  onClick={() => this.props.navigate(prod.product_url)}
+                                >
+                                  Mua ngay
+                                </button>
                               </td>
                             </tr>
                           ))}

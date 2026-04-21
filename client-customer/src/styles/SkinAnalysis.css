@@ -444,6 +444,7 @@
     font-weight: 600;
     text-decoration: none;
     display: inline-block;
+    cursor: pointer;
     transition: all 0.2s;
 }
 
