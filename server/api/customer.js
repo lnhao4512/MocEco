@@ -282,35 +282,35 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
         type: "Sữa rửa mặt", 
         usage: "Làm sạch sâu, kiềm dầu và ngừa mụn hiệu quả.", 
         image_url: "https://media.hasaki.vn/catalog/product/s/u/sua-rua-mat-la-roche-posay-dang-gel-danh-cho-da-dau-nhay-cam-200ml-1.jpg", 
-        product_url: "https://hasaki.vn/san-pham/gel-rua-mat-la-roche-posay-danh-cho-da-dau-nhay-cam-200ml-3616.html" 
+        product_url: "https://hasaki.vn/san-pham/gel-rua-mat-tao-bot-la-roche-posay-danh-cho-da-dau-nhay-cam-200ml-7947.html" 
       },
       { 
         name: "Serum La Roche-Posay Hyalu B5", 
         type: "Serum", 
         usage: "Phục hồi da, cấp ẩm và làm đầy nếp nhăn.", 
         image_url: "https://media.hasaki.vn/catalog/product/s/e/serum-la-roche-posay-ho-tro-phuc-hoi-da-hyalu-b5-serum-30ml-1_1.jpg", 
-        product_url: "https://hasaki.vn/san-pham/duong-chat-la-roche-posay-giup-tai-tao-phuc-hoi-da-30ml-31317.html" 
+        product_url: "https://hasaki.vn/san-pham/tinh-chat-la-roche-posay-ho-tro-phuc-hoi-da-30ml-76584.html" 
       },
       { 
         name: "Kem Dưỡng SVR Sebiaclear Mat + Pores", 
         type: "Kem dưỡng", 
         usage: "Kiềm dầu 8h và thu nhỏ lỗ chân lông.", 
         image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-duong-svr-lam-giam-mun-va-giup-se-khit-lo-chan-long-40ml-sebiaclear-mat-pores-1.jpg", 
-        product_url: "https://hasaki.vn/san-pham/kem-duong-svr-giup-lam-giam-mun-va-se-khit-lo-chan-long-40ml-24806.html" 
+        product_url: "https://hasaki.vn/san-pham/kem-duong-svr-kiem-dau-se-khit-lo-chan-long-40ml-moi-105689.html" 
       },
       { 
         name: "Sữa Chống Nắng Anessa Perfect UV", 
         type: "Chống nắng", 
         usage: "Bảo vệ tối đa với công nghệ Auto Booster.", 
         image_url: "https://media.hasaki.vn/catalog/product/g/e/gel-chong-nang-anessa-duong-da-bao-ve-hoan-hao-90g-perfect-uv-sunscreen-skincare-gel-n-new-1.jpg", 
-        product_url: "https://hasaki.vn/san-pham/sua-chong-nang-anessa-bao-ve-hoan-hao-60ml-100412.html" 
+        product_url: "https://hasaki.vn/san-pham/sua-chong-nang-anessa-duong-da-kiem-dau-60ml-moi-119084.html" 
       },
       { 
         name: "Nước Hoa Hồng Klairs Supple Preparation", 
         type: "Toner", 
         usage: "Cân bằng pH và làm dịu da nhạy cảm.", 
         image_url: "https://media.hasaki.vn/catalog/product/f/a/facebook-dynamic-nuoc-hoa-hong-klairs-khong-mui-cho-da-nhay-cam-180ml-1618392150_1.jpg", 
-        product_url: "https://hasaki.vn/san-pham/nuoc-hoa-hong-klairs-khong-mui-cho-da-nhay-cam-180ml-33245.html" 
+        product_url: "https://hasaki.vn/san-pham/nuoc-hoa-hong-khong-mui-klairs-danh-cho-da-nhay-cam-180ml-65994.html" 
       }
     ];
 
