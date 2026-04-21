@@ -179,6 +179,7 @@ class Home extends Component {
                                         muted={false}
                                         playsInline
                                         className="fig-hero-video"
+                                        onEnded={(e) => e.target.play()}
                                         onError={() => this.setState({ hero: { ...hero, video: '' } })} // Fallback to image on error
                                         onLoadedData={() => {
                                             if (this.videoRef.current) {
@@ -276,6 +277,7 @@ class Home extends Component {
                                         loop
                                         muted
                                         playsInline
+                                        onEnded={(e) => e.target.play()}
                                         style={{ width: '100%', height: '420px', objectFit: 'contain', borderRadius: '28px', background: '#3e5c2f' }}
                                     />
                                 ) : (
