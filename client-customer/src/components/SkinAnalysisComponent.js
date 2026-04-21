@@ -376,20 +376,40 @@ class SkinAnalysis extends Component {
       return;
     }
 
-    this.setState({ analyzing: true, result: null });
+    this.setState({ analyzing: true, result: null, error: '' });
     const config = { headers: { 'x-access-token': this.context.token } };
     const body = { 
        image: imageData, 
        userId: customer._id,
-       hints: hints // Gửi kết quả scan thô lên server
+       hints: hints
     };
 
-    axios.post('/api/customer/skin-analysis', body, config).then((res) => {
-        if (res.data.success) {
+    const doRequest = (retryCount = 0) => {
+      axios.post('/api/customer/skin-analysis', body, { ...config, timeout: 30000 })
+        .then((res) => {
+          if (res.data.success) {
             this.setState({ result: res.data.data, analyzing: false });
             this.apiGetHistory();
-        } else { this.setState({ error: 'Lỗi AI: ' + res.data.message, analyzing: false }); }
-    }).catch(() => this.setState({ error: 'Lỗi mạng khi phân tích.', analyzing: false }));
+          } else {
+            this.setState({ error: 'Lỗi AI: ' + res.data.message, analyzing: false });
+          }
+        })
+        .catch((err) => {
+          const status = err.response?.status;
+          // Nếu là 502 (server đang khởi động lại), thử lại 1 lần
+          if ((status === 502 || status === 503 || !status) && retryCount < 1) {
+            this.setState({ error: '⏳ Server đang khởi động lại, đang thử lại sau 8 giây...' });
+            setTimeout(() => doRequest(retryCount + 1), 8000);
+          } else {
+            this.setState({
+              error: '❌ Không kết nối được server. Server có thể đang khởi động (1-2 phút). Vui lòng đợi và nhấn nút SOI DA lại.',
+              analyzing: false
+            });
+          }
+        });
+    };
+
+    doRequest();
   }
 
   apiGetHistory() {
