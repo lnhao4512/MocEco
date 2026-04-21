@@ -66,9 +66,21 @@ class LandingComponent extends Component {
       });
   };
 
+  getYouTubeEmbedUrl = (url) => {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      if (match && match[2].length === 11) {
+          const videoId = match[2];
+          return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0`;
+      }
+      return null;
+  };
+
   render() {
     const hero = this.state.hero;
     const videoSrc = hero?.video || '';
+    const ytEmbedUrl = this.getYouTubeEmbedUrl(videoSrc);
 
     return (
       <div className="inner-responsive" style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
@@ -79,7 +91,25 @@ class LandingComponent extends Component {
         <div style={{ background: '#fff', padding: '30px', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.05)' }}>
             <div style={{ marginBottom: '30px' }}>
                 <h4 style={{ marginBottom: '15px', color: '#374d29' }}>Video hiện tại (Tỉ lệ 16:9):</h4>
-                {videoSrc ? (
+                {ytEmbedUrl ? (
+                    <div style={{ 
+                        width: '100%', 
+                        aspectRatio: '16/9', 
+                        background: '#000', 
+                        borderRadius: '12px', 
+                        overflow: 'hidden',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)' 
+                    }}>
+                        <iframe 
+                            src={ytEmbedUrl}
+                            title="YouTube Hero Video Preview"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                            style={{ width: '100%', height: '100%' }}
+                        />
+                    </div>
+                ) : videoSrc ? (
                     <div style={{ 
                         width: '100%', 
                         aspectRatio: '16/9', 

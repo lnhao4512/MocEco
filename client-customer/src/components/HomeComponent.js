@@ -111,6 +111,18 @@ class Home extends Component {
         }
     };
 
+    // Helper to get YouTube Embed URL
+    getYouTubeEmbedUrl = (url) => {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        if (match && match[2].length === 11) {
+            const videoId = match[2];
+            return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0`;
+        }
+        return null;
+    };
+
     render() {
         const about = this.state.about || {
             title: 'Câu Chuyện Của Mộc',
@@ -125,6 +137,7 @@ class Home extends Component {
             video: ''
         };
         const hero = this.state.hero || { video: '' };
+        const ytEmbedUrl = this.getYouTubeEmbedUrl(hero.video);
 
         return (
             <div className="fig-layout">
@@ -142,7 +155,19 @@ class Home extends Component {
                             </div>
                         </div>
                         <div className="fig-hero-art">
-                            {hero.video ? (
+                            {ytEmbedUrl ? (
+                                <div className="fig-hero-video-wrapper">
+                                    <iframe 
+                                        src={ytEmbedUrl}
+                                        title="YouTube Hero Video"
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        allowFullScreen
+                                        className="fig-hero-video"
+                                        style={{ pointerEvents: 'none' }} // Prevent interaction for background effect
+                                    />
+                                </div>
+                            ) : hero.video ? (
                                 <div className="fig-hero-video-wrapper">
                                     <video 
                                         key={hero.video}
