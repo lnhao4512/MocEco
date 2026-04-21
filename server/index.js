@@ -13,9 +13,11 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-      'http://localhost:3000',  // admin
-      'http://localhost:3002',  // customer
-      'http://localhost:3001'
+      'http://localhost:3000',
+      'http://localhost:3002',
+      'http://localhost:3001',
+      'https://moc-eco.vercel.app',
+      /\.vercel\.app$/
     ],
     methods: ['GET', 'POST']
   }
@@ -60,8 +62,21 @@ app.use('/api/customer', require('./api/customer.js'));
 app.use('/api/customer', require('./api/cart.js'));       // cart routes
 app.use('/api',          require('./api/checkout.js'));    // new checkout routes
 app.get('/hello', (req, res) => {
-  res.json({ message: 'Hello from server!' });
+  res.json({ message: 'Hello from server!', time: new Date().toISOString() });
 });
+
+// ── Self-Ping to prevent Render free tier sleep ───────────────────────────────
+const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://moceco.onrender.com';
+setInterval(() => {
+  const https = require('https');
+  const http_mod = require('http');
+  const mod = SELF_URL.startsWith('https') ? https : http_mod;
+  mod.get(`${SELF_URL}/hello`, (r) => {
+    console.log(`[KeepAlive] Pinged ${SELF_URL}/hello → ${r.statusCode}`);
+  }).on('error', (e) => {
+    console.warn('[KeepAlive] Ping failed:', e.message);
+  });
+}, 14 * 60 * 1000); // every 14 minutes
 
 // ── Error handling ───────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
