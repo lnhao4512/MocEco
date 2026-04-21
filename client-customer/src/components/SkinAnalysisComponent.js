@@ -186,9 +186,11 @@ class SkinAnalysis extends Component {
         console.error("Standard Camera Error:", e);
         let errMsg = 'Không thể truy cập Camera.';
         if (e.name === 'NotReadableError') {
-            errMsg = 'Camera đang bị ứng dụng khác sử dụng hoặc bị lỗi phần cứng. Vui lòng tắt các app camera khác và tải lại trang.';
+            errMsg = '⚠️ Camera đang bị ứng dụng khác sử dụng. Vui lòng tắt các app camera khác rồi nhấn 🔄 TẢI LẠI TRANG.';
         } else if (e.name === 'NotAllowedError') {
-            errMsg = 'Bạn đã chặn quyền truy cập Camera. Vui lòng cấp quyền trong cài đặt trình duyệt.';
+            errMsg = '📷 Bạn chưa cấp quyền Camera. Vui lòng: (1) Nhấn vào icon 🔒 hoặc 📷 trên thanh địa chỉ trình duyệt → Cho phép Camera → (2) Nhấn 🔄 TẢI LẠI TRANG để thử lại.';
+        } else if (e.name === 'NotFoundError') {
+            errMsg = '❌ Không tìm thấy camera trên thiết bị. Vui lòng dùng chế độ 📂 UPLOAD ảnh thay thế.';
         }
         this.setState({ 
             isInitializingCamera: false,
