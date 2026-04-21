@@ -231,6 +231,11 @@ function runAIPrediction(base64Image) {
         resolve(null);
       }, 15000); 
 
+      // Bắt lỗi stream để tránh Node.js sập (EPIPE)
+      python.stdin.on('error', (err) => {
+          console.error("AI Stdin Error (Python exited early?):", err.message);
+      });
+
       python.stdin.write(base64Image);
       python.stdin.end();
 

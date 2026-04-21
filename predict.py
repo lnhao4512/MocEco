@@ -19,7 +19,14 @@ from tensorflow.keras.preprocessing import image
 import io
 from PIL import Image
 
+# ─── OPTIMIZE MEMORY FOR FREE HOSTING (RENDER) ─────────────────────────
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1' # Ép chạy CPU
+try:
+    tf.config.threading.set_intra_op_parallelism_threads(1)
+    tf.config.threading.set_inter_op_parallelism_threads(1)
+except Exception:
+    pass
 tf.get_logger().setLevel('ERROR')
 
 # ─── CLASS MAPPING (khop voi thu tu alphabet cua train/) ─────────────────────
