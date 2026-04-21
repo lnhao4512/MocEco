@@ -26,10 +26,10 @@ const productPool = {
     { name: "Sữa Rửa Mặt Simple Refreshing Wash", type: "Sữa rửa mặt", usage: "Làm sạch thoáng, không gây khô căng.", image_url: "https://placehold.co/100x100/e0f7fa/006064?text=Simple", product_url: "https://hasaki.vn/san-pham/sua-rua-mat-simple-giup-da-sach-thoang-150ml-101594.html" }
   ],
   serums: [
-    { name: "Serum La Roche-Posay Hyalu B5", type: "Serum", usage: "Phục hồi da, cấp ẩm và làm đầy nếp nhăn.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=Hyalu+B5", product_url: "https://hasaki.vn/san-pham/tinh-chat-la-roche-posay-ho-tro-phuc-hoi-da-30ml-76584.html" },
+    { name: "Serum La Roche-Posay Hyalu B5", type: "Serum", usage: "Phục hồi da, cấp ẩm và làm đầy nếp nhăn.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=Hyalu+B5", product_url: "https://hasaki.vn/catalogsearch/result?q=hyalu+b5+la+roche+posay" },
     { name: "Serum L'Oreal Revitalift HA", type: "Serum", usage: "Cấp ẩm sâu, giúp da sáng mịn rạng rỡ.", image_url: "https://placehold.co/100x100/fff3e0/e65100?text=L%27Oreal+HA", product_url: "https://hasaki.vn/catalogsearch/result?q=loreal+revitalift+hyaluronic+acid+serum" },
     { name: "Paula's Choice 2% BHA Liquid", type: "Tẩy tế bào chết", usage: "Làm sạch lỗ chân lông, giảm mụn ẩn.", image_url: "https://placehold.co/100x100/f3e5f5/6a1b9a?text=PC+BHA", product_url: "https://hasaki.vn/san-pham/dung-dich-tay-da-chet-paula-s-choice-2-bha-30ml-91146.html" },
-    { name: "Dưỡng Chất Vichy Mineral 89", type: "Serum", usage: "Củng cố hàng rào bảo vệ da, cấp ẩm.", image_url: "https://placehold.co/100x100/e8eaf6/283593?text=Vichy+89", product_url: "https://hasaki.vn/san-pham/duong-chat-khoang-phuc-hoi-va-bao-ve-da-vichy-mineral-89-50ml-65457.html" },
+    { name: "Dưỡng Chất Vichy Mineral 89", type: "Serum", usage: "Củng cố hàng rào bảo vệ da, cấp ẩm.", image_url: "https://placehold.co/100x100/e8eaf6/283593?text=Vichy+89", product_url: "https://hasaki.vn/catalogsearch/result?q=vichy+mineral+89" },
     { name: "Skin1004 Centella Ampoule", type: "Serum", usage: "Làm dịu da kích ứng, kháng viêm.", image_url: "https://placehold.co/100x100/e8f5e9/1b5e20?text=Skin1004", product_url: "https://hasaki.vn/catalogsearch/result?q=skin1004+centella" },
     { name: "Serum L'Oreal Glycolic Bright", type: "Serum", usage: "Làm mờ thâm nám, giúp da đều màu.", image_url: "https://placehold.co/100x100/fff9c4/f57f17?text=Glycolic", product_url: "https://hasaki.vn/catalogsearch/result?q=loreal+glycolic+bright+serum" }
   ],
@@ -38,13 +38,13 @@ const productPool = {
     { name: "Kem Dưỡng Neutrogena Hydro Boost", type: "Kem dưỡng", usage: "Cấp nước chuyên sâu cho da mềm mịn.", image_url: "https://placehold.co/100x100/e1f5fe/01579b?text=Neutrogena", product_url: "https://hasaki.vn/san-pham/kem-duong-am-neutrogena-cap-nuoc-cho-da-50g-90341.html" },
     { name: "Effaclar Duo+ M La Roche-Posay", type: "Kem trị mụn", usage: "Giảm mụn viêm và ngăn ngừa vết thâm.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=Effaclar+Duo", product_url: "https://hasaki.vn/catalogsearch/result?q=effaclar+duo" },
     { name: "Kem Dưỡng Hada Labo Advanced", type: "Kem dưỡng", usage: "Dưỡng ẩm sâu, ngăn ngừa lão hóa.", image_url: "https://placehold.co/100x100/fce4ec/880e4f?text=Hada+Labo", product_url: "https://hasaki.vn/catalogsearch/result?q=hada+labo+advanced+nourish+cream" },
-    { name: "Kem Dưỡng Bioderma Cicabio", type: "Kem dưỡng", usage: "Phục hồi da tổn thương, làm dịu da.", image_url: "https://placehold.co/100x100/ede7f6/4527a0?text=Cicabio", product_url: "https://hasaki.vn/san-pham/kem-duong-bioderma-phuc-hoi-da-ton-thuong-40ml-65412.html" }
+    { name: "Kem Dưỡng Bioderma Cicabio", type: "Kem dưỡng", usage: "Phục hồi da tổn thương, làm dịu da.", image_url: "https://placehold.co/100x100/ede7f6/4527a0?text=Cicabio", product_url: "https://hasaki.vn/catalogsearch/result?q=bioderma+cicabio" }
   ],
   others: [
     { name: "Sữa Chống Nắng Anessa Perfect UV", type: "Chống nắng", usage: "Bảo vệ tối đa, kiềm dầu tốt.", image_url: "https://placehold.co/100x100/fff8e1/f9a825?text=Anessa", product_url: "https://hasaki.vn/san-pham/sua-chong-nang-anessa-duong-da-kiem-dau-60ml-moi-119084.html" },
     { name: "Kem Chống Nắng LRP Anthelios Fluid", type: "Chống nắng", usage: "Màng lọc Mexoryl 400 bảo vệ tối ưu.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=Anthelios", product_url: "https://hasaki.vn/catalogsearch/result?q=anthelios" },
     { name: "Kem Chống Nắng Eucerin Sun Serum", type: "Chống nắng", usage: "Dưỡng sáng da và ngăn ngừa thâm nám.", image_url: "https://placehold.co/100x100/e3f2fd/1565c0?text=Eucerin+Sun", product_url: "https://hasaki.vn/catalogsearch/result?q=eucerin+sun+serum+spf50" },
-    { name: "Nước Hoa Hồng Mamonde Rose Water", type: "Toner", usage: "Làm dịu và se khít lỗ chân lông.", image_url: "https://placehold.co/100x100/fce4ec/880e4f?text=Mamonde", product_url: "https://hasaki.vn/san-pham/nuoc-hoa-hong-mamonde-rose-water-toner-250ml-65489.html" },
+    { name: "Nước Hoa Hồng Mamonde Rose Water", type: "Toner", usage: "Làm dịu và se khít lỗ chân lông.", image_url: "https://placehold.co/100x100/fce4ec/880e4f?text=Mamonde", product_url: "https://hasaki.vn/catalogsearch/result?q=mamonde+rose+water+toner" },
     { name: "Nước Cân Bằng Eucerin Dermopure", type: "Toner", usage: "Cân bằng độ pH cho da dầu mụn.", image_url: "https://placehold.co/100x100/e3f2fd/1565c0?text=Eucerin+Toner", product_url: "https://hasaki.vn/catalogsearch/result?q=eucerin+dermopure+toner" }
   ]
 };
