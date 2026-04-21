@@ -502,7 +502,15 @@ class SkinAnalysis extends Component {
                           {result.products.map((prod, i) => (
                             <tr key={i} className="product-row">
                               <td className="product-cell image">
-                                <img src={prod.image_url} alt={prod.name} referrerPolicy="no-referrer" />
+                                <img 
+                                  src={prod.image_url} 
+                                  alt={prod.name} 
+                                  referrerPolicy="no-referrer"
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = `https://placehold.co/80x80/e8f5e9/374d29?text=${encodeURIComponent(prod.type || 'SP')}`;
+                                  }}
+                                />
                               </td>
                               <td className="product-cell info">
                                 <div className="product-type">{prod.type}</div>
