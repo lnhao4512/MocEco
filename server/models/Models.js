@@ -115,11 +115,18 @@ const SkinAnalysisSchema = mongoose.Schema({
         wrinkles: { type: Number, default: 0 },
         hydration: { type: Number, default: 0 } 
     },
-    reasons: {
-        acne: String,
-        pores: String
-    },
-    recommendations: [String],
+    severity: String,
+    conditions: String,
+    analysis: String,
+    products: [
+        {
+            name: String,
+            type: String,
+            usage: String,
+            image_url: String,
+            product_url: String
+        }
+    ],
     createdAt: { type: Date, default: Date.now }
 }, { versionKey: false });
 

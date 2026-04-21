@@ -178,16 +178,22 @@ function runAIPrediction(base64Image) {
     console.log("--- BẮT ĐẦU GỌI AI PREDICTION ---");
     try {
       const rootPath = path.join(__dirname, '../../');
+      const predictScript = path.join(rootPath, 'predict.py');
+      
+      if (!fs.existsSync(predictScript)) {
+        console.warn("AI Script predict.py not found. Skipping deep learning.");
+        return resolve(null);
+      }
+
       const python = spawn('python', ['predict.py'], { cwd: rootPath });
       let result = '';
       let error = '';
 
-      // Tăng thời gian chờ cho AI (Mô hình 500MB load khá chậm)
       const timeout = setTimeout(() => {
-        console.error("AI TIED OUT: Python took too long to respond.");
+        console.error("AI TIMED OUT");
         python.kill();
-        resolve({ success: false, message: "AI Timeout" });
-      }, 30000); // 30 giây
+        resolve(null);
+      }, 15000); 
 
       python.stdin.write(base64Image);
       python.stdin.end();
@@ -197,22 +203,21 @@ function runAIPrediction(base64Image) {
       
       python.on('error', (err) => {
         clearTimeout(timeout);
-        console.error("FAILED TO START AI PROCESS:", err);
+        console.error("FAILED TO START AI PROCESS (Is Python installed?):", err.message);
         resolve(null);
       });
 
       python.on('close', (code) => {
         clearTimeout(timeout);
         if (code !== 0) {
-          console.error("AI PROCESS FAILED. Code:", code, "Error:", error);
+          console.error("AI PROCESS FAILED. Code:", code);
           return resolve(null);
         }
         try {
           const parsed = JSON.parse(result);
-          console.log("AI RESULT:", parsed.prediction, "Conf:", parsed.confidence);
           resolve(parsed);
         } catch (e) {
-          console.error("AI JSON Parse Error:", e, "Raw Output:", result);
+          console.error("AI JSON Parse Error:", e);
           resolve(null);
         }
       });
@@ -237,7 +242,7 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
     try {
         aiResult = await runAIPrediction(image);
     } catch (aiErr) {
-        console.error("Mô hình AI chưa sẵn sàng hoặc bị lỗi:", aiErr);
+        console.warn("Deep learning model error:", aiErr.message);
     }
     
     // --- THUẬT TOÁN CÂN BẰNG THỐNG KÊ (AI NORMALIZATION) ---
@@ -245,77 +250,63 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
     let poresScore = 10;
     
     if (hints) {
-      acneScore = Math.min(100, Math.round(hints.acneRate * 5.5 + 2)); 
-      poresScore = Math.min(100, Math.round(hints.poreRate * 2.2 + 5));
+      acneScore = Math.min(100, Math.round((hints.acneRate || 0) * 5.5 + 2)); 
+      poresScore = Math.min(100, Math.round((hints.poreRate || 0) * 2.2 + 5));
 
-      // NẾU AI XÁC NHẬN CÓ MỤN -> CHỈ TIN NẾU SCANNER THẤY > 3% DIỆN TÍCH CÓ VẤN ĐỀ
       if (aiResult && aiResult.success && aiResult.prediction === 'acne' && aiResult.confidence > 0.6) {
-          if (hints.acneRate > 3) { // Phải có mật độ mụn thực tế đủ lớn mới tin AI
+          if (hints.acneRate > 3) {
               acneScore = Math.max(acneScore, Math.round(aiResult.confidence * 40 + acneScore * 0.6));
           } else {
-              // Nếu Scanner thấy da sạch (mụn < 3%) nhưng AI báo mụn -> Ép về da sạch
-              acneScore = Math.min(acneScore, 5);
+              acneScore = Math.min(acneScore, 8);
           }
       }
-      // NẾU AI XÁC NHẬN DA BÌNH THƯỜNG -> TIN TƯỞNG TUYỆT ĐỐI
       if (aiResult && aiResult.success && (aiResult.prediction === 'normal' || aiResult.confidence < 0.3)) {
           acneScore = Math.min(acneScore, 4);
       }
     } else {
-    // Trường hợp không có hints (fallback) - Dùng giá trị trung bình ổn định thay vì random
-    acneScore = 15;
-    poresScore = 20;
-  }
+      acneScore = 15;
+      poresScore = 20;
+    }
 
-  const skinTypes = ['Da Dầu', 'Da Khô', 'Da Hỗn Hợp', 'Da Nhạy Cảm'];
-  const status = ['nhẹ', 'trung bình', 'nặng'];
+    const skinTypes = ['Da Dầu', 'Da Khô', 'Da Hỗn Hợp', 'Da Nhạy Cảm'];
+    let randomSkinType = skinTypes[2]; 
+    if (poresScore > 50) randomSkinType = skinTypes[0];
+    else if (poresScore < 15 && (hints?.wrinkleRate || 0) > 10) randomSkinType = skinTypes[1];
 
-  // Xác định loại da dựa trên tổ hợp Lỗ chân lông và Texture
-  let randomSkinType = skinTypes[2]; 
-  if (poresScore > 50) randomSkinType = skinTypes[0]; // Da Dầu thường lỗ chân lông to
-  else if (poresScore < 15 && (hints?.wrinkleRate || 0) > 10) randomSkinType = skinTypes[1]; // Da Khô thường nhiều nếp nhăn li ti
+    const severity = acneScore > 50 ? 'nặng' : (acneScore > 15 ? 'trung bình' : 'nhẹ');
 
-  // Xác định mức độ tổng quát
-  const severity = acneScore > 50 ? 'nặng' : (acneScore > 15 ? 'trung bình' : 'nhẹ');
+    const allProducts = [
+      { name: "Sữa Rửa Mặt Effaclar Gel", type: "Sữa rửa mặt", usage: "Làm sạch sâu, giảm dầu, ngừa mụn.", image_url: "https://media.hasaki.vn/catalog/product/s/u/sua-rua-mat-la-roche-posay-dang-gel-danh-cho-da-dau-nhay-cam-200ml-1.jpg", product_id: "3616", item_id: "1" },
+      { name: "Serum B5 La Roche-Posay", type: "Serum", usage: "Phục hồi da, cấp ẩm chuyên sâu.", image_url: "https://media.hasaki.vn/catalog/product/s/e/serum-la-roche-posay-ho-tro-phuc-hoi-da-hyalu-b5-serum-30ml-1_1.jpg", product_id: "31317", item_id: "1" },
+      { name: "Kem Dưỡng Kiềm Dầu SVR", type: "Kem dưỡng", usage: "Giảm bóng nhờn, thu nhỏ lỗ chân lông.", image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-duong-svr-lam-giam-mun-va-giup-se-khit-lo-chan-long-40ml-sebiaclear-mat-pores-1.jpg", product_id: "24806", item_id: "1" },
+      { name: "Chống Nắng Anessa Perfect UV", type: "Chống nắng", usage: "Bảo vệ da toàn diện, không gây bí da.", image_url: "https://media.hasaki.vn/catalog/product/g/e/gel-chong-nang-anessa-duong-da-bao-ve-hoan-hao-90g-perfect-uv-sunscreen-skincare-gel-n-new-1.jpg", product_id: "100412", item_id: "1" },
+      { name: "Toner Klairs Supple Preparation", type: "Nước hoa hồng", usage: "Cân bằng pH, làm dịu da tức thì.", image_url: "https://media.hasaki.vn/catalog/product/f/a/facebook-dynamic-nuoc-hoa-hong-klairs-khong-mui-cho-da-nhay-cam-180ml-1618392150_1.jpg", product_id: "33245", item_id: "1" }
+    ];
 
-  // MOCK PRODUCTS (In real app, fetch from DB based on tags)
-  const allProducts = [
-    { name: "Sữa Rửa Mặt Effaclar Gel", type: "Sữa rửa mặt", usage: "Làm sạch sâu, giảm dầu, ngừa mụn.", image_url: "https://media.hasaki.vn/catalog/product/s/u/sua-rua-mat-la-roche-posay-dang-gel-danh-cho-da-dau-nhay-cam-200ml-1.jpg", product_id: "3616", item_id: "1" },
-    { name: "Serum B5 La Roche-Posay", type: "Serum", usage: "Phục hồi da, cấp ẩm chuyên sâu.", image_url: "https://media.hasaki.vn/catalog/product/s/e/serum-la-roche-posay-ho-tro-phuc-hoi-da-hyalu-b5-serum-30ml-1_1.jpg", product_id: "31317", item_id: "1" },
-    { name: "Kem Dưỡng Kiềm Dầu SVR", type: "Kem dưỡng", usage: "Giảm bóng nhờn, thu nhỏ lỗ chân lông.", image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-duong-svr-lam-giam-mun-va-giup-se-khit-lo-chan-long-40ml-sebiaclear-mat-pores-1.jpg", product_id: "24806", item_id: "1" },
-    { name: "Chống Nắng Anessa Perfect UV", type: "Chống nắng", usage: "Bảo vệ da toàn diện, không gây bí da.", image_url: "https://media.hasaki.vn/catalog/product/g/e/gel-chong-nang-anessa-duong-da-bao-ve-hoan-hao-90g-perfect-uv-sunscreen-skincare-gel-n-new-1.jpg", product_id: "100412", item_id: "1" },
-    { name: "Toner Klairs Supple Preparation", type: "Nước hoa hồng", usage: "Cân bằng pH, làm dịu da tức thì.", image_url: "https://media.hasaki.vn/catalog/product/f/a/facebook-dynamic-nuoc-hoa-hong-klairs-khong-mui-cho-da-nhay-cam-180ml-1618392150_1.jpg", product_id: "33245", item_id: "1" }
-  ];
+    const recommendedProducts = allProducts.slice(0, 4).map(p => ({
+      ...p,
+      product_url: `https://hasaki.vn/san-pham-ban-chay.html?product_id=${p.product_id}&item_id=${p.item_id}`
+    }));
 
-  // Lọc sản phẩm phù hợp (logic đơn giản)
-  const recommendedProducts = allProducts.slice(0, 4).map(p => ({
-    ...p,
-    product_url: `https://hasaki.vn/san-pham-ban-chay.html?product_id=${p.product_id}&item_id=${p.item_id}`
-  }));
-
-  const analysisResult = {
-    userId,
-    image,
-    skinType: randomSkinType,
-    severity: severity,
-    conditions: acneScore > 40 ? 'Mụn viêm, dầu thừa' : (poresScore > 40 ? 'Lỗ chân lông to, dầu nhờn' : 'Da ổn định, ít khuyết điểm'),
-    concerns: {
-      acne: acneScore, 
-      texture: Math.min(100, Math.round((hints?.textureRate || 0) * 1.5 + 5)),
-      pores: poresScore,
-      wrinkles: Math.min(100, Math.round((hints?.wrinkleRate || 0) * 1.8 + 3)),
-      hydration: Math.max(30, Math.min(95, 100 - (hints?.textureRate || 0) * 0.8 - (hints?.poreRate || 0) * 0.5))
-    },
-    analysis: acneScore > 40 ? 
-      "Da bạn đang gặp tình trạng mụn viêm lan rộng và hàng rào bảo vệ da bị tổn thương. Cần tập trung vào việc làm dịu da và sử dụng các hoạt chất kháng viêm chuyên biệt." : 
-      "Nền da của bạn tương đối ổn định, tuy nhiên vùng chữ T vẫn còn hiện tượng bóng dầu và lỗ chân lông chưa được se khít hoàn toàn. Hãy chú trọng bước làm sạch và cấp nước.",
-    products: recommendedProducts,
-    createdAt: new Date().toISOString()
-  };
-
-  if (analysisResult.concerns.acne > 30) {
-    analysisResult.recommendations.push('Hạn chế đồ cay nóng và thức khuya để giảm viêm.');
-  }
+    const analysisResult = {
+      userId,
+      image,
+      skinType: randomSkinType,
+      severity: severity,
+      conditions: acneScore > 40 ? 'Mụn viêm, dầu thừa' : (poresScore > 40 ? 'Lỗ chân lông to, dầu nhờn' : 'Da ổn định, ít khuyết điểm'),
+      concerns: {
+        acne: acneScore, 
+        texture: Math.min(100, Math.round((hints?.textureRate || 0) * 1.5 + 5)),
+        pores: poresScore,
+        wrinkles: Math.min(100, Math.round((hints?.wrinkleRate || 0) * 1.8 + 3)),
+        hydration: Math.max(30, Math.min(95, 100 - (hints?.textureRate || 0) * 0.8 - (hints?.poreRate || 0) * 0.5))
+      },
+      analysis: acneScore > 40 ? 
+        "Da bạn đang gặp tình trạng mụn viêm lan rộng và hàng rào bảo vệ da bị tổn thương. Cần tập trung vào việc làm dịu da và sử dụng các hoạt chất kháng viêm chuyên biệt." : 
+        "Nền da của bạn tương đối ổn định, tuy nhiên vùng chữ T vẫn còn hiện tượng bóng dầu và lỗ chân lông chưa được se khít hoàn toàn. Hãy chú trọng bước làm sạch và cấp nước.",
+      products: recommendedProducts,
+      createdAt: new Date().toISOString()
+    };
 
     // Lưu vào database
     try {
@@ -323,11 +314,11 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
       res.json({ success: true, data: savedAnalysis });
     } catch (dbErr) {
       console.error("Save analysis error:", dbErr);
-      res.json({ success: false, message: 'Lỗi khi lưu kết quả phân tích vào database.' });
+      res.json({ success: false, message: 'Lỗi khi lưu kết quả phân tích vào database: ' + dbErr.message });
     }
   } catch (err) {
     console.error("FATAL SKIN ANALYSIS ERROR:", err);
-    res.json({ success: false, message: 'Lỗi hệ thống nghiêm trọng trong quá trình phân tích.' });
+    res.json({ success: false, message: 'Lỗi hệ thống: ' + err.message });
   }
 });
 

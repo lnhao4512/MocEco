@@ -153,6 +153,7 @@ class Home extends Component {
                                         muted={true}
                                         playsInline
                                         className="fig-hero-video"
+                                        onError={() => this.setState({ hero: { ...hero, video: '' } })} // Fallback to image on error
                                         onLoadedData={() => {
                                             if (this.videoRef.current) {
                                                 this.videoRef.current.volume = this.state.volume;

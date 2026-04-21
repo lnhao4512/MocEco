@@ -174,7 +174,6 @@ class SkinAnalysis extends Component {
             video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
         });
         this.setState({ stream }, () => {
-            // Đợi React render video element
             setTimeout(() => {
                 if (this.videoRef.current) {
                     this.videoRef.current.srcObject = stream;
@@ -185,9 +184,15 @@ class SkinAnalysis extends Component {
         });
     } catch (e) { 
         console.error("Standard Camera Error:", e);
+        let errMsg = 'Không thể truy cập Camera.';
+        if (e.name === 'NotReadableError') {
+            errMsg = 'Camera đang bị ứng dụng khác sử dụng hoặc bị lỗi phần cứng. Vui lòng tắt các app camera khác và tải lại trang.';
+        } else if (e.name === 'NotAllowedError') {
+            errMsg = 'Bạn đã chặn quyền truy cập Camera. Vui lòng cấp quyền trong cài đặt trình duyệt.';
+        }
         this.setState({ 
             isInitializingCamera: false,
-            error: 'Không thể truy cập Camera. Vui lòng cấp quyền hoặc đổi trình duyệt (Khuyên dùng Chrome).' 
+            error: errMsg 
         }); 
     }
   };

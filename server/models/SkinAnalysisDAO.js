@@ -11,8 +11,10 @@ const SkinAnalysisDAO = {
         image: data.image,
         skinType: data.skinType,
         concerns: data.concerns,
-        reasons: data.reasons, // Mapping reasons
-        recommendations: data.recommendations,
+        severity: data.severity,
+        conditions: data.conditions,
+        analysis: data.analysis,
+        products: data.products,
         createdAt: data.createdAt || new Date()
       });
       await analysis.save();
