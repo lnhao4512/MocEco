@@ -275,39 +275,6 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
 
     const severity = acneScore > 50 ? 'nặng' : (acneScore > 15 ? 'trung bình' : 'nhẹ');
 
-    // Kho sản phẩm đa dạng từ Hasaki (21 sản phẩm)
-    const productPool = {
-      cleansers: [
-        { name: "Sữa Rửa Mặt La Roche-Posay Effaclar Gel", type: "Sữa rửa mặt", usage: "Làm sạch sâu, kiềm dầu cho da mụn.", image_url: "https://media.hasaki.vn/catalog/product/s/u/sua-rua-mat-la-roche-posay-dang-gel-danh-cho-da-dau-nhay-cam-200ml-1.jpg", product_url: "https://hasaki.vn/san-pham/gel-rua-mat-tao-bot-la-roche-posay-danh-cho-da-dau-nhay-cam-200ml-7947.html" },
-        { name: "Sữa Rửa Mặt CeraVe Hydrating Cleanser", type: "Sữa rửa mặt", usage: "Làm sạch dịu nhẹ, giữ ẩm cho da khô.", image_url: "https://media.hasaki.vn/catalog/product/s/u/sua-rua-mat-cerave-cho-da-thuong-den-kho-473ml-1672304918_1.jpg", product_url: "https://hasaki.vn/san-pham/sua-rua-mat-cerave-cho-da-thuong-den-kho-473ml-102963.html" },
-        { name: "Sữa Rửa Mặt Cetaphil Gentle Skin Cleanser", type: "Sữa rửa mặt", usage: "Công thức dịu lành cho da nhạy cảm.", image_url: "https://media.hasaki.vn/catalog/product/s/u/sua-rua-mat-cetaphil-diu-nhe-khong-xa-phong-473ml-moi-1698224538_1.jpg", product_url: "https://hasaki.vn/san-pham/sua-rua-mat-cetaphil-diu-nhe-khong-xa-phong-473ml-moi-101588.html" },
-        { name: "Gel Rửa Mặt Bioderma Sebium Gel Moussant", type: "Sữa rửa mặt", usage: "Kiểm soát bã nhờn, thanh lọc da dầu.", image_url: "https://media.hasaki.vn/catalog/product/g/e/gel-rua-mat-bioderma-danh-cho-da-dau-hon-hop-500ml-1678179974_1.jpg", product_url: "https://hasaki.vn/san-pham/gel-rua-mat-bioderma-danh-cho-da-dau-hon-hop-500ml-6548.html" },
-        { name: "Sữa Rửa Mặt Simple Refreshing Facial Wash", type: "Sữa rửa mặt", usage: "Làm sạch thoáng, không gây khô căng.", image_url: "https://media.hasaki.vn/catalog/product/s/u/sua-rua-mat-simple-giup-da-sach-thoang-150ml-1681705646_1.jpg", product_url: "https://hasaki.vn/san-pham/sua-rua-mat-simple-giup-da-sach-thoang-150ml-101594.html" }
-      ],
-      serums: [
-        { name: "Serum La Roche-Posay Hyalu B5", type: "Serum", usage: "Phục hồi da, cấp ẩm và làm đầy nếp nhăn.", image_url: "https://media.hasaki.vn/catalog/product/s/e/serum-la-roche-posay-ho-tro-phuc-hoi-da-hyalu-b5-serum-30ml-1_1.jpg", product_url: "https://hasaki.vn/san-pham/tinh-chat-la-roche-posay-ho-tro-phuc-hoi-da-30ml-76584.html" },
-        { name: "Serum L'Oreal Revitalift HA", type: "Serum", usage: "Cấp ẩm sâu, giúp da sáng mịn rạng rỡ.", image_url: "https://media.hasaki.vn/catalog/product/s/e/serum-l-oreal-hyaluronic-acid-cap-am-sang-da-30ml-1678179974_1.jpg", product_url: "https://hasaki.vn/san-pham/serum-l-oreal-hyaluronic-acid-cap-am-sang-da-30ml-91959.html" },
-        { name: "Paula’s Choice 2% BHA Liquid", type: "Tẩy tế bào chết", usage: "Làm sạch lỗ chân lông, giảm mụn ẩn.", image_url: "https://media.hasaki.vn/catalog/product/d/u/dung-dich-tay-da-chet-paula-s-choice-2-bha-30ml-1662534563_1.jpg", product_url: "https://hasaki.vn/san-pham/dung-dich-tay-da-chet-paula-s-choice-2-bha-30ml-91146.html" },
-        { name: "Dưỡng Chất Vichy Mineral 89", type: "Serum", usage: "Củng cố hàng rào bảo vệ da, cấp ẩm.", image_url: "https://media.hasaki.vn/catalog/product/v/i/vichy-duong-chat-khoang-phuc-hoi-va-bao-ve-da-mineral-89-50ml-1678179974_1.jpg", product_url: "https://hasaki.vn/san-pham/duong-chat-khoang-phuc-hoi-va-bao-ve-da-vichy-mineral-89-50ml-65457.html" },
-        { name: "Skin1004 Madagascar Centella Ampoule", type: "Serum", usage: "Làm dịu da kích ứng, kháng viêm.", image_url: "https://media.hasaki.vn/catalog/product/t/i/tinh-chat-rau-ma-skin1004-lam-diu-da-100ml-1678179974_1.jpg", product_url: "https://hasaki.vn/san-pham/tinh-chat-rau-ma-skin1004-lam-diu-da-100ml-65444.html" },
-        { name: "Serum L'Oreal Glycolic Bright", type: "Serum", usage: "Làm mờ thâm nám, giúp da đều màu.", image_url: "https://media.hasaki.vn/catalog/product/s/e/serum-l-oreal-sang-da-mo-tham-mun-nam-30ml-moi-1678179974_1.jpg", product_url: "https://hasaki.vn/san-pham/serum-l-oreal-sang-da-mo-tham-mun-nam-30ml-moi-101567.html" }
-      ],
-      creams: [
-        { name: "Kem Dưỡng SVR Sebiaclear Mat + Pores", type: "Kem dưỡng", usage: "Kiềm dầu và thu nhỏ lỗ chân lông.", image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-duong-svr-lam-giam-mun-va-giup-se-khit-lo-chan-long-40ml-sebiaclear-mat-pores-1.jpg", product_url: "https://hasaki.vn/san-pham/kem-duong-svr-kiem-dau-se-khit-lo-chan-long-40ml-moi-105689.html" },
-        { name: "Kem Dưỡng Neutrogena Hydro Boost", type: "Kem dưỡng", usage: "Cấp nước chuyên sâu cho da mềm mịn.", image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-duong-am-neutrogena-cap-nuoc-cho-da-kho-50g-1_1.jpg", product_url: "https://hasaki.vn/san-pham/kem-duong-am-neutrogena-cap-nuoc-cho-da-50g-90341.html" },
-        { name: "Effaclar Duo+ M La Roche-Posay", type: "Kem trị mụn", usage: "Giảm mụn viêm và ngăn ngừa vết thâm.", image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-duong-la-roche-posay-giup-giam-mun-ngua-vet-tham-40ml_1.jpg", product_url: "https://hasaki.vn/san-pham/kem-duong-la-roche-posay-giup-giam-mun-ngua-vet-tham-40ml-10511.html" },
-        { name: "Kem Dưỡng Hada Labo Advanced Nourish", type: "Kem dưỡng", usage: "Dưỡng ẩm sâu, ngăn ngừa lão hóa.", image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-duong-hada-labo-sach-sau-duong-am-50g-1698224538_1.jpg", product_url: "https://hasaki.vn/san-pham/kem-duong-hada-labo-sach-sau-duong-am-50g-101578.html" },
-        { name: "Kem Dưỡng Bioderma Cicabio Cream", type: "Kem dưỡng", usage: "Phục hồi da tổn thương, làm dịu da.", image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-duong-bioderma-phuc-hoi-da-ton-thuong-40ml-1678179974_1.jpg", product_url: "https://hasaki.vn/san-pham/kem-duong-bioderma-phuc-hoi-da-ton-thuong-40ml-65412.html" }
-      ],
-      others: [
-        { name: "Sữa Chống Nắng Anessa Perfect UV", type: "Chống nắng", usage: "Bảo vệ tối đa, kiềm dầu tốt.", image_url: "https://media.hasaki.vn/catalog/product/g/e/gel-chong-nang-anessa-duong-da-bao-ve-hoan-hao-90g-perfect-uv-sunscreen-skincare-gel-n-new-1.jpg", product_url: "https://hasaki.vn/san-pham/sua-chong-nang-anessa-duong-da-kiem-dau-60ml-moi-119084.html" },
-        { name: "Kem Chống Nắng LRP Anthelios Fluid", type: "Chống nắng", usage: "Màng lọc Mexoryl 400 bảo vệ tối ưu.", image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-chong-nang-la-reche-posay-kiem-soat-dau-50ml-1698224538_1.jpg", product_url: "https://hasaki.vn/san-pham/kem-chong-nang-la-reche-posay-kiem-soat-dau-50ml-101568.html" },
-        { name: "Kem Chống Nắng Eucerin Sun Serum", type: "Chống nắng", usage: "Dưỡng sáng da và ngăn ngừa thâm nám.", image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-chong-nang-eucerin-chua-tinh-chat-sang-da-50ml-1698224538_1.jpg", product_url: "https://hasaki.vn/san-pham/kem-chong-nang-eucerin-chua-tinh-chat-sang-da-50ml-101569.html" },
-        { name: "Nước Hoa Hồng Mamonde Rose Water", type: "Toner", usage: "Làm dịu và se khít lỗ chân lông.", image_url: "https://media.hasaki.vn/catalog/product/n/u/nuoc-hoa-hong-mamonde-rose-water-toner-250ml-1678179974_1.jpg", product_url: "https://hasaki.vn/san-pham/nuoc-hoa-hong-mamonde-rose-water-toner-250ml-65489.html" },
-        { name: "Nước Cân Bằng Eucerin Dermopure", type: "Toner", usage: "Cân bằng độ pH cho da dầu mụn.", image_url: "https://media.hasaki.vn/catalog/product/n/u/nuoc-can-bang-eucerin-cho-da-nhon-mun-200ml-1678179974_1.jpg", product_url: "https://hasaki.vn/san-pham/nuoc-can-bang-eucerin-cho-da-nhon-mun-200ml-65490.html" }
-      ]
-    };
-
     // AI Logic: Chọn sản phẩm thông minh dựa trên chỉ số chi tiết
     let recommendedProducts = [];
     const estimatedHydration = Math.max(30, Math.min(95, 100 - (hints?.textureRate || 0) * 0.8 - (hints?.poreRate || 0) * 0.5));
