@@ -273,104 +273,129 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
       return res.json({ success: false, message: 'Thiếu dữ liệu hình ảnh hoặc ID người dùng.' });
     }
 
-    // CHẠY DỰ ĐOÁN TỪ MÔ HÌNH AI ĐÃ TRAIN
+    // CHẠY DỰ ĐOÁN TỪ MÔ HÌNH AI (5 loại mụn)
     let aiResult = null;
     try {
         aiResult = await runAIPrediction(image);
+        console.log('[AI] Prediction:', aiResult?.prediction, '| Confidence:', aiResult?.confidence?.toFixed(2));
     } catch (aiErr) {
-        console.warn("Deep learning model error:", aiErr.message);
+        console.warn('[AI] Model error:', aiErr.message);
     }
-    
-    // --- THUẬT TOÁN CÂN BẰNG THỐNG KÊ (AI NORMALIZATION) ---
-    let acneScore = 5; 
+
+    // ─── TÍNH ĐIỂM DỰA TRÊN LOẠI MỤN AI PHÁT HIỆN ─────────────────────────
+    // Mapping loại mụn → acne score cơ sở
+    const ACNE_BASE_SCORES = {
+      'Blackheads': 18,  // Mụn đầu đen - nhẹ
+      'Whiteheads': 22,  // Mụn đầu trắng - nhẹ
+      'Papules':    50,  // Mụn sần - trung bình
+      'Pustules':   60,  // Mụn mủ - trung bình/nặng
+      'Cyst':       82   // U nang - nặng
+    };
+
+    let acneScore = 15;
     let poresScore = 10;
-    
-    if (hints) {
-      acneScore = Math.min(100, Math.round((hints.acneRate || 0) * 5.5 + 2)); 
-      poresScore = Math.min(100, Math.round((hints.poreRate || 0) * 2.2 + 5));
+    let aiAcneType = null;
+    let aiConfidence = 0;
 
-      if (aiResult && aiResult.success && aiResult.prediction === 'acne' && aiResult.confidence > 0.6) {
-          if (hints.acneRate > 3) {
-              acneScore = Math.max(acneScore, Math.round(aiResult.confidence * 40 + acneScore * 0.6));
-          } else {
-              acneScore = Math.min(acneScore, 8);
-          }
-      }
-      if (aiResult && aiResult.success && (aiResult.prediction === 'normal' || aiResult.confidence < 0.3)) {
-          acneScore = Math.min(acneScore, 4);
-      }
-    } else {
-      acneScore = 15;
-      poresScore = 20;
+    if (aiResult && aiResult.success && aiResult.confidence > 0.4) {
+      aiAcneType = aiResult.prediction;       // e.g. 'Cyst', 'Papules'
+      aiConfidence = aiResult.confidence;
+      const baseScore = ACNE_BASE_SCORES[aiAcneType] || 20;
+      // Kết hợp: 60% từ AI model + 40% từ pixel scan
+      const pixelAcneScore = hints ? Math.min(80, Math.round((hints.acneRate || 0) * 5)) : 15;
+      acneScore = Math.round(baseScore * 0.6 + pixelAcneScore * 0.4);
+    } else if (hints) {
+      acneScore = Math.min(80, Math.round((hints.acneRate || 0) * 5.5 + 5));
     }
 
-    const skinTypes = ['Da Dầu', 'Da Khô', 'Da Hỗn Hợp', 'Da Nhạy Cảm'];
-    let randomSkinType = skinTypes[2]; 
-    if (poresScore > 50) randomSkinType = skinTypes[0];
-    else if (poresScore < 15 && (hints?.wrinkleRate || 0) > 10) randomSkinType = skinTypes[1];
+    if (hints) {
+      poresScore = Math.min(100, Math.round((hints.poreRate || 0) * 2.2 + 5));
+    }
 
+    // ─── XÁC ĐỊNH LOẠI DA ────────────────────────────────────────────────────
+    const skinTypes = ['Da Dầu Mụn', 'Da Khô', 'Da Hỗn Hợp', 'Da Nhạy Cảm'];
+    let skinType = skinTypes[2];
+    if (acneScore > 40 || poresScore > 45) skinType = skinTypes[0];
+    else if (poresScore < 12 && (hints?.wrinkleRate || 0) > 10) skinType = skinTypes[1];
+    else if (acneScore > 15 && acneScore <= 40) skinType = skinTypes[3];
 
-    const severity = acneScore > 50 ? 'nặng' : (acneScore > 15 ? 'trung bình' : 'nhẹ');
+    // ─── MỨC ĐỘ NGHIÊM TRỌNG ─────────────────────────────────────────────────
+    const severity = acneScore > 55 ? 'nặng' : (acneScore > 20 ? 'trung bình' : 'nhẹ');
 
-    // AI Logic: Chọn sản phẩm thông minh dựa trên chỉ số chi tiết
-    let recommendedProducts = [];
+    // ─── PHÂN TÍCH MÔ TẢ CHI TIẾT THEO LOẠI MỤN ─────────────────────────────
+    const ACNE_TYPE_ANALYSIS = {
+      'Blackheads': 'AI phát hiện tình trạng mụn đầu đen (Blackheads) — do bã nhờn và tế bào chết tích tụ trong lỗ chân lông. Đây là dạng mụn không viêm, dễ điều trị nếu làm sạch đúng cách và tẩy tế bào chết đều đặn.',
+      'Whiteheads': 'AI phát hiện mụn đầu trắng (Whiteheads) — lỗ chân lông bị bít kín tạo ra các nhân trắng nhỏ. Cần giữ da sạch và dưỡng ẩm cân bằng để hạn chế tình trạng này.',
+      'Papules':    'AI phát hiện mụn sần (Papules) — dạng mụn viêm nhẹ, không có mủ nhưng có thể gây đau và đỏ. Cần tránh nặn mụn và sử dụng sản phẩm kháng viêm phù hợp.',
+      'Pustules':   'AI phát hiện mụn mủ (Pustules) — mụn viêm có chứa mủ, cần điều trị kháng khuẩn chuyên biệt. Tuyệt đối không tự nặn để tránh để lại thâm sẹo.',
+      'Cyst':       'AI phát hiện u nang bã nhờn (Cyst) — dạng mụn viêm sâu nghiêm trọng nhất, có thể gây đau và để lại sẹo nếu không được điều trị đúng cách. Nên tham khảo bác sĩ da liễu.'
+    };
+
+    const analysisText = aiAcneType
+      ? ACNE_TYPE_ANALYSIS[aiAcneType]
+      : (acneScore > 40
+        ? 'Da bạn đang có dấu hiệu mụn viêm. Cần tập trung vào làm sạch sâu và dưỡng ẩm cân bằng.'
+        : 'Nền da tương đối ổn định. Duy trì làm sạch đúng cách và bảo vệ khỏi tia UV.');
+
+    // ─── GỢI Ý SẢN PHẨM THEO LOẠI MỤN AI ────────────────────────────────────
     const estimatedHydration = Math.max(30, Math.min(95, 100 - (hints?.textureRate || 0) * 0.8 - (hints?.poreRate || 0) * 0.5));
+    let recommendedProducts = [];
 
-    if (acneScore > 50) {
-      // Tình trạng mụn nặng
-      recommendedProducts = [productPool.cleansers[3], productPool.creams[2], productPool.serums[4], productPool.others[1], productPool.others[4]];
-    } else if (acneScore > 20) {
-      // Mụn nhẹ/trung bình
-      recommendedProducts = [productPool.cleansers[0], productPool.creams[2], productPool.serums[0], productPool.others[0]];
-    } else if (poresScore > 40) {
-      // Lỗ chân lông to, dầu nhiều
+    if (aiAcneType === 'Cyst' || acneScore > 65) {
+      // U nang / mụn nặng → cần trị liệu chuyên sâu
+      recommendedProducts = [productPool.cleansers[3], productPool.serums[4], productPool.creams[2], productPool.others[1], productPool.others[4]];
+    } else if (aiAcneType === 'Pustules' || (aiAcneType === 'Papules' && acneScore > 40)) {
+      // Mụn mủ / mụn sần nặng
+      recommendedProducts = [productPool.cleansers[0], productPool.creams[2], productPool.serums[0], productPool.serums[4], productPool.others[0]];
+    } else if (aiAcneType === 'Papules') {
+      // Mụn sần nhẹ
+      recommendedProducts = [productPool.cleansers[0], productPool.serums[4], productPool.creams[0], productPool.others[1]];
+    } else if (aiAcneType === 'Blackheads' || poresScore > 40) {
+      // Mụn đầu đen / lỗ chân lông to
       recommendedProducts = [productPool.cleansers[3], productPool.serums[2], productPool.creams[0], productPool.others[4], productPool.others[0]];
+    } else if (aiAcneType === 'Whiteheads') {
+      // Mụn đầu trắng
+      recommendedProducts = [productPool.cleansers[4], productPool.serums[2], productPool.creams[1], productPool.others[1]];
     } else if (estimatedHydration < 45) {
-      // Da cực khô
+      // Da khô
       recommendedProducts = [productPool.cleansers[1], productPool.serums[1], productPool.serums[3], productPool.creams[3], productPool.others[1]];
-    } else if (estimatedHydration < 65) {
-      // Da thiếu ẩm nhẹ
-      recommendedProducts = [productPool.cleansers[2], productPool.serums[1], productPool.creams[1], productPool.others[3]];
-    } else if (hints?.textureRate > 15) {
-      // Da xỉn màu, thâm sạm
-      recommendedProducts = [productPool.cleansers[4], productPool.serums[5], productPool.creams[1], productPool.others[2]];
     } else {
-      // Da nhạy cảm hoặc ổn định
+      // Da ổn định / nhạy cảm
       recommendedProducts = [productPool.cleansers[2], productPool.serums[4], productPool.creams[4], productPool.others[1]];
     }
 
-    // Dữ liệu lưu vào DB (không gồm products - tránh schema conflict)
+    // ─── LƯU VÀO DATABASE ────────────────────────────────────────────────────
+    const conditionsText = aiAcneType
+      ? `${aiAcneType} (${Math.round(aiConfidence * 100)}% confidence)`
+      : (acneScore > 40 ? 'Mụn viêm, dầu thừa' : 'Da ổn định');
+
     const dbData = {
       userId,
       image,
-      skinType: randomSkinType,
-      severity: severity,
-      conditions: acneScore > 40 ? 'Mụn viêm, dầu thừa' : (poresScore > 40 ? 'Lỗ chân lông to, dầu nhờn' : 'Da ổn định, ít khuyết điểm'),
+      skinType,
+      severity,
+      conditions: conditionsText,
       concerns: {
-        acne: acneScore, 
-        texture: Math.min(100, Math.round((hints?.textureRate || 0) * 1.5 + 5)),
-        pores: poresScore,
-        wrinkles: Math.min(100, Math.round((hints?.wrinkleRate || 0) * 1.8 + 3)),
-        hydration: Math.max(30, Math.min(95, 100 - (hints?.textureRate || 0) * 0.8 - (hints?.poreRate || 0) * 0.5))
+        acne:      acneScore,
+        texture:   Math.min(100, Math.round((hints?.textureRate || 0) * 1.5 + 5)),
+        pores:     poresScore,
+        wrinkles:  Math.min(100, Math.round((hints?.wrinkleRate || 0) * 1.8 + 3)),
+        hydration: estimatedHydration
       },
-      analysis: acneScore > 40 ? 
-        "Da bạn đang gặp tình trạng mụn viêm lan rộng và hàng rào bảo vệ da bị tổn thương. Cần tập trung vào việc làm dịu da và sử dụng các hoạt chất kháng viêm chuyên biệt." : 
-        "Nền da của bạn tương đối ổn định, tuy nhiên vùng chữ T vẫn còn hiện tượng bóng dầu và lỗ chân lông chưa được se khít hoàn toàn. Hãy chú trọng bước làm sạch và cấp nước.",
+      analysis: analysisText,
       createdAt: new Date().toISOString()
     };
 
-    // Lưu vào database
     try {
       const savedAnalysis = await SkinAnalysisDAO.insert(dbData);
-      // Trả về kết quả có kèm products (products được gắn vào response, không lưu DB)
       res.json({ success: true, data: { ...savedAnalysis.toObject(), products: recommendedProducts } });
     } catch (dbErr) {
-      console.error("Save analysis error:", dbErr);
-      // Nếu DB lỗi, vẫn trả về kết quả để user thấy (không block UX)
+      console.error('Save analysis error:', dbErr);
       res.json({ success: true, data: { ...dbData, products: recommendedProducts }, dbError: dbErr.message });
     }
+
   } catch (err) {
-    console.error("FATAL SKIN ANALYSIS ERROR:", err);
+    console.error('FATAL SKIN ANALYSIS ERROR:', err);
     res.json({ success: false, message: 'Lỗi hệ thống: ' + err.message });
   }
 });
