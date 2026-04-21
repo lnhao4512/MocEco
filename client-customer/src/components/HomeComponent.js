@@ -241,14 +241,14 @@ class Home extends Component {
 
                             <div className="ab-features">
                                 <div className="ab-feature">
-                                    <div className="ab-feature__icon">⚡</div>
+
                                     <div className="ab-feature__body">
                                         <div className="ab-feature__name">Công nghệ hiện đại</div>
                                         <div className="ab-feature__sub">Sóng siêu âm &amp; RF thế hệ mới, hiệu quả vượt trội</div>
                                     </div>
                                 </div>
                                 <div className="ab-feature">
-                                    <div className="ab-feature__icon">🛡️</div>
+
                                     <div className="ab-feature__body">
                                         <div className="ab-feature__name">Cá nhân hóa vẻ đẹp</div>
                                         <div className="ab-feature__sub">Hệ thống tự động nhận diện và đưa ra giải pháp tối ưu nhất cho từng tình trạng da</div>
