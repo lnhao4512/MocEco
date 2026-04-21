@@ -10,8 +10,8 @@ class Home extends Component {
             newprods: [],
             about: null,
             hero: null,
-            isMuted: true,
-            volume: 0.5,
+            isMuted: false,
+            volume: 0.8,
             emailNewsletter: '',
             newsletterSubscribed: false
         };
@@ -118,7 +118,8 @@ class Home extends Component {
         const match = url.match(regExp);
         if (match && match[2].length === 11) {
             const videoId = match[2];
-            return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0`;
+            // mute=0 to enable sound
+            return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0`;
         }
         return null;
     };
@@ -175,7 +176,7 @@ class Home extends Component {
                                         src={hero.video} 
                                         autoPlay 
                                         loop 
-                                        muted={true}
+                                        muted={false}
                                         playsInline
                                         className="fig-hero-video"
                                         onError={() => this.setState({ hero: { ...hero, video: '' } })} // Fallback to image on error
