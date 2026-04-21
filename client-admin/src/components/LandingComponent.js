@@ -110,9 +110,48 @@ class LandingComponent extends Component {
             <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '30px 0' }} />
 
             <div>
-                <h4 style={{ marginBottom: '10px', color: '#374d29' }}>Tải video mới lên:</h4>
+                <h4 style={{ marginBottom: '10px', color: '#374d29' }}>Cách 1: Dán Link Video trực tiếp (Khuyên dùng - Vĩnh viễn)</h4>
                 <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>
-                    * Video nên có tỉ lệ 16:9 (ngang) và dung lượng tối đa 100MB để đảm bảo trải nghiệm tốt nhất.
+                    Sử dụng link từ <strong>Cloudinary, Dropbox, hoặc Server riêng</strong> để video không bao giờ bị mất khi Server khởi động lại.
+                </p>
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '30px' }}>
+                    <input 
+                        type="text" 
+                        placeholder="Dán link video tại đây (vd: https://res.cloudinary.com/...)"
+                        value={this.state.hero?.video || ''}
+                        onChange={(e) => this.setState({ hero: { ...this.state.hero, video: e.target.value } })}
+                        style={{ 
+                            padding: '12px', 
+                            border: '1px solid #ddd', 
+                            borderRadius: '8px', 
+                            background: '#fff',
+                            flex: '1'
+                        }} 
+                    />
+                    <button 
+                        onClick={() => {
+                            const config = { headers: { 'x-access-token': this.context.token } };
+                            axios.put('/api/admin/hero', { video: this.state.hero.video }, config).then(res => {
+                                if (res.data.success) alert('Đã lưu link video vĩnh viễn!');
+                            });
+                        }}
+                        style={{ 
+                            padding: '12px 25px', 
+                            background: '#374d29', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '8px', 
+                            fontWeight: 'bold',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        LƯU LINK
+                    </button>
+                </div>
+
+                <h4 style={{ marginBottom: '10px', color: '#374d29' }}>Cách 2: Tải video từ máy tính (Tạm thời)</h4>
+                <p style={{ fontSize: '13px', color: '#ff4d4f', marginBottom: '15px' }}>
+                    ⚠️ Lưu ý: Do Server Render dùng bộ nhớ tạm, video tải lên theo cách này sẽ <strong>biến mất sau 15-30 phút</strong> hoặc khi server restart.
                 </p>
                 
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -144,7 +183,7 @@ class LandingComponent extends Component {
                             transition: 'all 0.2s'
                         }}
                     >
-                        {this.state.uploading ? 'ĐANG UPLOAD...' : 'BẮT ĐẦU UPLOAD'}
+                        {this.state.uploading ? 'ĐANG UPLOAD...' : 'TẢI LÊN TẠM THỜI'}
                     </button>
                 </div>
                 {this.state.message && <p style={{ marginTop: '15px', color: 'green', fontWeight: 'bold' }}>{this.state.message}</p>}
