@@ -104,14 +104,6 @@ const HeroSchema = mongoose.Schema({
     video: { type: String, default: '' }  // URL to file
 }, { versionKey: false });
 
-const SkinProductSchema = mongoose.Schema({
-    name: String,
-    type: String,
-    usage: String,
-    image_url: String,
-    product_url: String
-}, { _id: false, versionKey: false });
-
 const SkinAnalysisSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     userId: { type: String, required: true },
@@ -126,7 +118,7 @@ const SkinAnalysisSchema = mongoose.Schema({
     severity: String,
     conditions: String,
     analysis: String,
-    products: [SkinProductSchema],
+    // products không lưu vào DB - được trả về trực tiếp từ API
     createdAt: { type: Date, default: Date.now }
 }, { versionKey: false });
 

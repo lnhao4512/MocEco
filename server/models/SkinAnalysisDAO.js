@@ -14,7 +14,7 @@ const SkinAnalysisDAO = {
         severity: data.severity,
         conditions: data.conditions,
         analysis: data.analysis,
-        products: data.products,
+        // products không lưu DB
         createdAt: data.createdAt || new Date()
       });
       await analysis.save();
