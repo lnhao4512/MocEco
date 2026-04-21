@@ -502,7 +502,7 @@ class SkinAnalysis extends Component {
                           {result.products.map((prod, i) => (
                             <tr key={i} className="product-row">
                               <td className="product-cell image">
-                                <img src={prod.image_url} alt={prod.name} />
+                                <img src={prod.image_url} alt={prod.name} referrerPolicy="no-referrer" />
                               </td>
                               <td className="product-cell info">
                                 <div className="product-type">{prod.type}</div>
@@ -510,12 +510,14 @@ class SkinAnalysis extends Component {
                                 <div className="product-usage">{prod.usage}</div>
                               </td>
                               <td className="product-cell action">
-                                <button 
-                                  className="btn-buy-now" 
-                                  onClick={() => this.props.navigate(prod.product_url)}
+                                <a 
+                                  href={prod.product_url} 
+                                  target="_blank" 
+                                  rel="noreferrer" 
+                                  className="btn-buy-now"
                                 >
                                   Mua ngay
-                                </button>
+                                </a>
                               </td>
                             </tr>
                           ))}

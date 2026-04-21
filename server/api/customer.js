@@ -275,45 +275,53 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
 
     const severity = acneScore > 50 ? 'nặng' : (acneScore > 15 ? 'trung bình' : 'nhẹ');
 
-    // Lấy sản phẩm từ database thay vì hardcode
-    let recommendedProducts = [];
-    try {
-      // Tìm các sản phẩm theo từ khóa phổ biến cho skincare
-      const keywords = ["Sữa rửa mặt", "Serum", "Kem dưỡng", "Chống nắng"];
-      const searchTasks = keywords.map(kw => ProductDAO.selectByKeyword(kw));
-      const searchResults = await Promise.all(searchTasks);
-      
-      // Lấy mỗi loại 1 sản phẩm nếu có
-      searchResults.forEach((prods, index) => {
-        if (prods && prods.length > 0) {
-          const p = prods[0];
-          recommendedProducts.push({
-            name: p.name,
-            type: keywords[index],
-            usage: "Phù hợp với tình trạng da của bạn.",
-            image_url: `data:image/jpg;base64,${p.image}`,
-            product_url: `/product/${p._id}` // Link nội bộ
-          });
-        }
-      });
-
-      // Nếu không tìm thấy đủ, lấy sản phẩm mới nhất làm fallback
-      if (recommendedProducts.length < 3) {
-        const topNew = await ProductDAO.selectTopNew(5);
-        topNew.forEach(p => {
-          if (!recommendedProducts.find(rp => rp.name === p.name) && recommendedProducts.length < 5) {
-            recommendedProducts.push({
-              name: p.name,
-              type: p.category?.name || "Dưỡng da",
-              usage: "Sản phẩm khuyên dùng hàng ngày.",
-              image_url: `data:image/jpg;base64,${p.image}`,
-              product_url: `/product/${p._id}`
-            });
-          }
-        });
+    // Đề xuất sản phẩm từ Hasaki theo yêu cầu
+    const allHasakiProducts = [
+      { 
+        name: "Sữa Rửa Mặt La Roche-Posay Effaclar Gel", 
+        type: "Sữa rửa mặt", 
+        usage: "Làm sạch sâu, kiềm dầu và ngừa mụn hiệu quả.", 
+        image_url: "https://media.hasaki.vn/catalog/product/s/u/sua-rua-mat-la-roche-posay-dang-gel-danh-cho-da-dau-nhay-cam-200ml-1.jpg", 
+        product_url: "https://hasaki.vn/san-pham/gel-rua-mat-la-roche-posay-danh-cho-da-dau-nhay-cam-200ml-3616.html" 
+      },
+      { 
+        name: "Serum La Roche-Posay Hyalu B5", 
+        type: "Serum", 
+        usage: "Phục hồi da, cấp ẩm và làm đầy nếp nhăn.", 
+        image_url: "https://media.hasaki.vn/catalog/product/s/e/serum-la-roche-posay-ho-tro-phuc-hoi-da-hyalu-b5-serum-30ml-1_1.jpg", 
+        product_url: "https://hasaki.vn/san-pham/duong-chat-la-roche-posay-giup-tai-tao-phuc-hoi-da-30ml-31317.html" 
+      },
+      { 
+        name: "Kem Dưỡng SVR Sebiaclear Mat + Pores", 
+        type: "Kem dưỡng", 
+        usage: "Kiềm dầu 8h và thu nhỏ lỗ chân lông.", 
+        image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-duong-svr-lam-giam-mun-va-giup-se-khit-lo-chan-long-40ml-sebiaclear-mat-pores-1.jpg", 
+        product_url: "https://hasaki.vn/san-pham/kem-duong-svr-giup-lam-giam-mun-va-se-khit-lo-chan-long-40ml-24806.html" 
+      },
+      { 
+        name: "Sữa Chống Nắng Anessa Perfect UV", 
+        type: "Chống nắng", 
+        usage: "Bảo vệ tối đa với công nghệ Auto Booster.", 
+        image_url: "https://media.hasaki.vn/catalog/product/g/e/gel-chong-nang-anessa-duong-da-bao-ve-hoan-hao-90g-perfect-uv-sunscreen-skincare-gel-n-new-1.jpg", 
+        product_url: "https://hasaki.vn/san-pham/sua-chong-nang-anessa-bao-ve-hoan-hao-60ml-100412.html" 
+      },
+      { 
+        name: "Nước Hoa Hồng Klairs Supple Preparation", 
+        type: "Toner", 
+        usage: "Cân bằng pH và làm dịu da nhạy cảm.", 
+        image_url: "https://media.hasaki.vn/catalog/product/f/a/facebook-dynamic-nuoc-hoa-hong-klairs-khong-mui-cho-da-nhay-cam-180ml-1618392150_1.jpg", 
+        product_url: "https://hasaki.vn/san-pham/nuoc-hoa-hong-klairs-khong-mui-cho-da-nhay-cam-180ml-33245.html" 
       }
-    } catch (prodErr) {
-      console.error("Error fetching recommended products:", prodErr);
+    ];
+
+    // Lọc sản phẩm dựa trên tình trạng da (AI Recommendation logic)
+    let recommendedProducts = [];
+    if (acneScore > 30) {
+      // Ưu tiên SRM mụn và Serum phục hồi
+      recommendedProducts = [allHasakiProducts[0], allHasakiProducts[1], allHasakiProducts[2], allHasakiProducts[3]];
+    } else {
+      // Ưu tiên dưỡng ẩm và chống nắng
+      recommendedProducts = [allHasakiProducts[4], allHasakiProducts[1], allHasakiProducts[3], allHasakiProducts[2]];
     }
 
     // Dữ liệu lưu vào DB (không gồm products - tránh schema conflict)
