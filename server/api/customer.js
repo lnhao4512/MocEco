@@ -211,6 +211,14 @@ router.get('/hero', async function (req, res) {
 // Hàm chạy dự đoán từ mô hình AI (Python)
 function runAIPrediction(base64Image) {
   return new Promise((resolve) => {
+    // RENDER FREE TIER OOM PREVENTION:
+    // TensorFlow requires ~400MB RAM. Render Free only has 512MB.
+    // Spawning Python will crash the entire Node.js server (OOM Kill -> 502 error).
+    if (process.env.RENDER) {
+        console.warn("[AI] Disabled on Render Free Tier to prevent 502 OOM crash. Using fallback pixel heuristic.");
+        return resolve(null);
+    }
+
     console.log("--- BẮT ĐẦU GỌI AI PREDICTION ---");
     try {
       const rootPath = path.join(__dirname, '../../');
