@@ -23,3 +23,8 @@ server/uploads/
 # OS specific
 Thumbs.db
 desktop.ini
+
+# Assistant data
+brain/
+.gemini/
+redesign_plan.md

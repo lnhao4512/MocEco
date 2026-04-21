@@ -267,18 +267,38 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
     poresScore = 20;
   }
 
-  const skinTypes = ['Da Dầu (Oily)', 'Da Khô (Dry)', 'Da Hỗn Hợp (Combination)', 'Da Nhạy Cảm (Sensitive)'];
-  const status = ['Nhẹ (Mild)', 'Trung bình (Moderate)', 'Nghiêm trọng (Severe)'];
+  const skinTypes = ['Da Dầu', 'Da Khô', 'Da Hỗn Hợp', 'Da Nhạy Cảm'];
+  const status = ['nhẹ', 'trung bình', 'nặng'];
 
   // Xác định loại da dựa trên tổ hợp Lỗ chân lông và Texture
   let randomSkinType = skinTypes[2]; 
   if (poresScore > 50) randomSkinType = skinTypes[0]; // Da Dầu thường lỗ chân lông to
   else if (poresScore < 15 && (hints?.wrinkleRate || 0) > 10) randomSkinType = skinTypes[1]; // Da Khô thường nhiều nếp nhăn li ti
 
+  // Xác định mức độ tổng quát
+  const severity = acneScore > 50 ? 'nặng' : (acneScore > 15 ? 'trung bình' : 'nhẹ');
+
+  // MOCK PRODUCTS (In real app, fetch from DB based on tags)
+  const allProducts = [
+    { name: "Sữa Rửa Mặt Effaclar Gel", type: "Sữa rửa mặt", usage: "Làm sạch sâu, giảm dầu, ngừa mụn.", image_url: "https://media.hasaki.vn/catalog/product/s/u/sua-rua-mat-la-roche-posay-dang-gel-danh-cho-da-dau-nhay-cam-200ml-1.jpg", product_id: "3616", item_id: "1" },
+    { name: "Serum B5 La Roche-Posay", type: "Serum", usage: "Phục hồi da, cấp ẩm chuyên sâu.", image_url: "https://media.hasaki.vn/catalog/product/s/e/serum-la-roche-posay-ho-tro-phuc-hoi-da-hyalu-b5-serum-30ml-1_1.jpg", product_id: "31317", item_id: "1" },
+    { name: "Kem Dưỡng Kiềm Dầu SVR", type: "Kem dưỡng", usage: "Giảm bóng nhờn, thu nhỏ lỗ chân lông.", image_url: "https://media.hasaki.vn/catalog/product/k/e/kem-duong-svr-lam-giam-mun-va-giup-se-khit-lo-chan-long-40ml-sebiaclear-mat-pores-1.jpg", product_id: "24806", item_id: "1" },
+    { name: "Chống Nắng Anessa Perfect UV", type: "Chống nắng", usage: "Bảo vệ da toàn diện, không gây bí da.", image_url: "https://media.hasaki.vn/catalog/product/g/e/gel-chong-nang-anessa-duong-da-bao-ve-hoan-hao-90g-perfect-uv-sunscreen-skincare-gel-n-new-1.jpg", product_id: "100412", item_id: "1" },
+    { name: "Toner Klairs Supple Preparation", type: "Nước hoa hồng", usage: "Cân bằng pH, làm dịu da tức thì.", image_url: "https://media.hasaki.vn/catalog/product/f/a/facebook-dynamic-nuoc-hoa-hong-klairs-khong-mui-cho-da-nhay-cam-180ml-1618392150_1.jpg", product_id: "33245", item_id: "1" }
+  ];
+
+  // Lọc sản phẩm phù hợp (logic đơn giản)
+  const recommendedProducts = allProducts.slice(0, 4).map(p => ({
+    ...p,
+    product_url: `https://hasaki.vn/san-pham-ban-chay.html?product_id=${p.product_id}&item_id=${p.item_id}`
+  }));
+
   const analysisResult = {
     userId,
     image,
     skinType: randomSkinType,
+    severity: severity,
+    conditions: acneScore > 40 ? 'Mụn viêm, dầu thừa' : (poresScore > 40 ? 'Lỗ chân lông to, dầu nhờn' : 'Da ổn định, ít khuyết điểm'),
     concerns: {
       acne: acneScore, 
       texture: Math.min(100, Math.round((hints?.textureRate || 0) * 1.5 + 5)),
@@ -286,24 +306,10 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
       wrinkles: Math.min(100, Math.round((hints?.wrinkleRate || 0) * 1.8 + 3)),
       hydration: Math.max(30, Math.min(95, 100 - (hints?.textureRate || 0) * 0.8 - (hints?.poreRate || 0) * 0.5))
     },
-    reasons: {
-      acne: acneScore > 40 ? 
-        `Phát hiện mật độ viêm cao (${(hints?.acneRate || 0).toFixed(1)}%), da đang có dấu hiệu mụn sưng đỏ rõ rệt.` : 
-        `Vùng da khá sạch mụn, mật độ sắc tố đỏ chỉ ở mức ${(hints?.acneRate || 0).toFixed(1)}%.`,
-      pores: poresScore > 50 ? 
-        `Phát hiện các điểm tối màu li ti (${(hints?.poreRate || 0).toFixed(1)}%), cho thấy lỗ chân lông đang bị giãn nở.` : 
-        `Bề mặt da có độ se khít tốt, các lỗ chân lông không bị lộ rõ.`,
-      texture: (hints?.textureRate || 0) > 15 ? 
-        "Bề mặt da có độ nhám cao, cần chú trọng việc tẩy tế bào chết." : 
-        "Nền da mịn màng, độ tương phản bề mặt thấp."
-    },
-    recommendations: [
-      `Mức độ mụn của bạn: ${acneScore > 40 ? status[2] : (acneScore > 15 ? status[1] : status[0])}.`,
-      acneScore > 30 ? "Nên dùng Sữa rửa mặt Tràm trà & Gel chấm mụn thảo mộc." : "Duy trì Sữa rửa mặt Dịu nhẹ để bảo vệ hàng rào da.",
-      poresScore > 40 ? "Sử dụng Nước hoa hồng cân bằng da để thu nhỏ lỗ chân lông." : "Tiếp tục quy trình chăm sóc da hiện tại.",
-      (Math.round((hints?.wrinkleRate || 0) * 1.8 + 3) > 20) ? "Bổ sung Serum chống lão hóa và kem mắt." : "Chú trọng bảo vệ da với kem chống nắng.",
-      "Uống đủ 2L nước mỗi ngày để hỗ trợ đào thải độc tố."
-    ],
+    analysis: acneScore > 40 ? 
+      "Da bạn đang gặp tình trạng mụn viêm lan rộng và hàng rào bảo vệ da bị tổn thương. Cần tập trung vào việc làm dịu da và sử dụng các hoạt chất kháng viêm chuyên biệt." : 
+      "Nền da của bạn tương đối ổn định, tuy nhiên vùng chữ T vẫn còn hiện tượng bóng dầu và lỗ chân lông chưa được se khít hoàn toàn. Hãy chú trọng bước làm sạch và cấp nước.",
+    products: recommendedProducts,
     createdAt: new Date().toISOString()
   };
 

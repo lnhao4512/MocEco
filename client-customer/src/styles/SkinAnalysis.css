@@ -144,23 +144,56 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(5px);
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
+    padding: 20px;
 }
 
 .skin-result-card {
     background: white;
-    width: 95%;
-    max-width: 480px;
-    border-radius: 35px;
-    padding: 25px 30px;
+    width: 100%;
+    max-width: 1000px;
+    border-radius: 40px;
     position: relative;
-    max-height: 90vh;
+    max-height: 95vh;
+    overflow: hidden; /* Header and Footer fixed, scroll content */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.25);
+}
+
+.skin-result-content {
+    display: flex;
+    flex: 1;
     overflow-y: auto;
+    padding: 30px;
+    gap: 40px;
+}
+
+@media (max-width: 900px) {
+    .skin-result-content {
+        flex-direction: column;
+        padding: 20px;
+    }
+}
+
+.skin-result-side-info {
+    flex: 1;
+    max-width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.skin-result-main-data {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 }
 
 .skin-reasons-table {
@@ -238,15 +271,20 @@
 }
 
 .skin-avatar-wrap.main-diag {
-    width: 250px;
+    width: 100%;
     height: auto;
     aspect-ratio: 4/3;
-    border-radius: 20px;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 .main-diag .skin-captured-mini {
-    border-radius: 20px;
-    border: 2px solid #db9b91;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none;
 }
 
 .acne-marker {
@@ -322,39 +360,157 @@
 
 
 
-.skin-recs {
-    background: #f7f5f0;
-    padding: 20px;
-    border-radius: 20px;
-    margin-bottom: 30px;
+/* PRODUCT RECOMMENDATIONS TABLE */
+.skin-product-table-wrap {
+    margin-top: 10px;
 }
 
-.skin-recs h3 {
-    font-size: 16px;
-    color: #374d29;
-    margin-bottom: 10px;
-}
-
-.skin-recs ul {
-    list-style: none;
-    padding: 0;
-}
-
-.skin-recs li {
-    font-size: 14px;
-    color: #4b5563;
-    margin-bottom: 8px;
-}
-
-.skin-btn-prod {
+.skin-product-table {
     width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+}
+
+.product-row {
+    background: #f8fafc;
+    transition: all 0.3s;
+    border-radius: 15px;
+}
+
+.product-row:hover {
+    background: #f1f5f9;
+    transform: translateX(5px);
+}
+
+.product-cell {
     padding: 15px;
-    border-radius: 20px;
-    border: none;
+    vertical-align: middle;
+}
+
+.product-cell.image {
+    width: 80px;
+    padding-left: 15px;
+}
+
+.product-cell.image img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: white;
+}
+
+.product-cell.info {
+    padding-left: 0;
+}
+
+.product-name {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.product-type {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    background: #e2e8f0;
+    color: #475569;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.product-usage {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.product-cell.action {
+    text-align: right;
+    padding-right: 15px;
+}
+
+.btn-buy-now {
     background: #374d29;
     color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s;
+}
+
+.btn-buy-now:hover {
+    background: #db9b91;
+}
+
+/* MEDICAL WARNING */
+.medical-warning-box {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    padding: 20px;
+    border-radius: 20px;
+    margin-top: 20px;
+}
+
+.medical-warning-box h4 {
+    color: #be123c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.clinic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.clinic-item {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.clinic-name {
     font-weight: 700;
-    cursor: pointer;
+    color: #1e293b;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.clinic-address {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.clinic-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.skin-analysis-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #334155;
+    background: #fdfaf6;
+    padding: 20px;
+    border-left: 4px solid #db9b91;
+    border-radius: 0 15px 15px 0;
+    margin-bottom: 25px;
 }
 
 /* HISTORY */

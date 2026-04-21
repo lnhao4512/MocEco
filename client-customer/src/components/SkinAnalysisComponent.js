@@ -399,88 +399,136 @@ class SkinAnalysis extends Component {
     const { result } = this.state;
     if (!result) return null;
 
+    // Determine if it's a "severe" case
+    const isSevere = result.severity === 'nặng';
+
     return (
       <div className="skin-result-overlay">
         <div className="skin-result-card ab-visible">
-          <button className="skin-close" onClick={() => this.setState({ result: null, image: null, error: '' })}>✕</button>
-          
-          <div className="skin-result-header">
-             <div className="skin-avatar-wrap main-diag">
-                <img src={result.image} alt="Captured" className="skin-captured-mini" />
-                {this.state.acneHighlights && this.state.acneHighlights.map((zone, idx) => (
-                  <div key={idx} className="acne-marker" style={{ 
-                    left: `${(zone.x / 640) * 100}%`, 
-                    top: `${(zone.y / 480) * 100}%`,
-                    width: `${Math.min(50, Math.max(20, zone.points * 0.4))}px`,
-                    height: `${Math.min(50, Math.max(20, zone.points * 0.4))}px`,
-                    animationDelay: `${idx * 0.15}s`
-                  }}></div>
-                ))}
-                <div className="skin-type-badge">{result.skinType}</div>
-             </div>
-             <h2>KẾT QUẢ PHÂN TÍCH</h2>
-          </div>
-
-          <div className="skin-metrics">
-            <div className="skin-metric">
-              <div className="skin-metric-head">
-                <span className="skin-metric-label">Độ mịn bề mặt (Smoothness)</span>
-                <span className="skin-metric-val">{Math.max(5, 100 - (result.concerns.texture || result.concerns.pores)).toFixed(0)}%</span>
-              </div>
-              <div className="skin-progress-bg">
-                <div className="skin-progress-fill" style={{ width: `${Math.max(5, 100 - (result.concerns.texture || result.concerns.pores))}%` }}></div>
-              </div>
-            </div>
-
-            <div className="skin-metric">
-              <div className="skin-metric-head">
-                <span className="skin-metric-label">Độ se khít lỗ chân lông (Pores)</span>
-                <span className="skin-metric-val">{Math.max(5, 100 - result.concerns.pores).toFixed(0)}%</span>
-              </div>
-              <div className="skin-progress-bg">
-                <div className="skin-progress-fill" style={{ width: `${Math.max(5, 100 - result.concerns.pores)}%`, background: '#374d29' }}></div>
-              </div>
-            </div>
-
-            <div className="skin-metric">
-              <div className="skin-metric-head">
-                <span className="skin-metric-label">Chỉ số sạch mụn (Acne-Free)</span>
-                <span className="skin-metric-val">{Math.max(5, 100 - result.concerns.acne).toFixed(0)}%</span>
-              </div>
-              <div className="skin-progress-bg">
-                <div className="skin-progress-fill" style={{ width: `${Math.max(5, 100 - result.concerns.acne)}%`, background: '#db9b91' }}></div>
-              </div>
-            </div>
-
-            <div className="skin-metric">
-              <div className="skin-metric-head">
-                <span className="skin-metric-label">Trẻ hóa & Đàn hồi (Anti-Aging)</span>
-                <span className="skin-metric-val">{Math.max(5, 95 - result.concerns.wrinkles).toFixed(0)}%</span>
-              </div>
-              <div className="skin-progress-bg">
-                <div className="skin-progress-fill" style={{ width: `${95 - result.concerns.wrinkles}%`, background: '#374d29' }}></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="skin-reasons-table">
-             <h4>Căn cứ phân tích (AI Log)</h4>
-             <div className="reason-item">
-                <span>Mụn & Viêm:</span>
-                <p>{result.reasons?.acne || 'Phát hiện mật độ sắc tố đỏ bất thường tại vùng chữ T.'}</p>
-             </div>
-             <div className="reason-item">
-                <span>Lỗ chân lông:</span>
-                <p>{result.reasons?.pores || 'Độ nhám bề mặt được xác định qua tương phản điểm ảnh.'}</p>
-             </div>
-          </div>
-
-          <div className="skin-recs">
-             <h3>Khuyên dùng từ chuyên gia</h3>
-             <ul>{result.recommendations.map((rec, i) => (<li key={i}>🌿 {rec}</li>))}</ul>
+          {/* Header */}
+          <div className="skin-result-header" style={{ padding: '20px 30px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+             <h2 style={{ margin: 0, color: '#374d29', fontSize: '20px' }}>BÁO CÁO CHẨN ĐOÁN DA LIÊU</h2>
+             <button className="skin-close" style={{ position: 'static' }} onClick={() => this.setState({ result: null, image: null, error: '' })}>✕</button>
           </div>
           
-          <button className="skin-btn-prod" onClick={() => this.props.navigate('/home#products')}>MUA SẢN PHẨM PHÙ HỢP</button>
+          <div className="skin-result-content">
+            {/* Left Side: Visuals & Metrics */}
+            <div className="skin-result-side-info">
+               <div className="skin-avatar-wrap main-diag">
+                  <img src={result.image} alt="Captured" className="skin-captured-mini" />
+                  {this.state.acneHighlights && this.state.acneHighlights.map((zone, idx) => (
+                    <div key={idx} className="acne-marker" style={{ 
+                      left: `${(zone.x / 640) * 100}%`, 
+                      top: `${(zone.y / 480) * 100}%`,
+                      width: `${Math.min(50, Math.max(20, zone.points * 0.4))}px`,
+                      height: `${Math.min(50, Math.max(20, zone.points * 0.4))}px`,
+                      animationDelay: `${idx * 0.15}s`
+                    }}></div>
+                  ))}
+                  <div className="skin-type-badge">{result.skinType || 'Hỗn hợp'}</div>
+               </div>
+
+               <div className="skin-metrics">
+                  <div className="skin-metric">
+                    <div className="skin-metric-head">
+                      <span className="skin-metric-label">Độ sạch mụn</span>
+                      <span className="skin-metric-val">{Math.max(5, 100 - (result.concerns?.acne || 0)).toFixed(0)}%</span>
+                    </div>
+                    <div className="skin-progress-bg">
+                      <div className="skin-progress-fill" style={{ width: `${Math.max(5, 100 - (result.concerns?.acne || 0))}%`, background: '#db9b91' }}></div>
+                    </div>
+                  </div>
+
+                  <div className="skin-metric">
+                    <div className="skin-metric-head">
+                      <span className="skin-metric-label">Độ mịn bề mặt</span>
+                      <span className="skin-metric-val">{Math.max(5, 100 - (result.concerns?.texture || 0)).toFixed(0)}%</span>
+                    </div>
+                    <div className="skin-progress-bg">
+                      <div className="skin-progress-fill" style={{ width: `${Math.max(5, 100 - (result.concerns?.texture || 0))}%` }}></div>
+                    </div>
+                  </div>
+               </div>
+
+               <div className="skin-reasons-table">
+                  <h4>Dữ liệu phân tích AI</h4>
+                  <div className="reason-item">
+                     <span>Tình trạng:</span>
+                     <p>{result.conditions || 'Đang xác định'}</p>
+                  </div>
+                  <div className="reason-item">
+                     <span>Mức độ:</span>
+                     <p style={{ color: isSevere ? '#dc2626' : '#374d29', fontWeight: 'bold' }}>
+                        {result.severity === 'nhẹ' ? 'Nhẹ' : result.severity === 'trung bình' ? 'Trung bình' : 'Nặng'}
+                     </p>
+                  </div>
+               </div>
+            </div>
+
+            {/* Right Side: Analysis & Products */}
+            <div className="skin-result-main-data">
+               <div className="skin-analysis-section">
+                  <h3 style={{ fontSize: '18px', color: '#1e293b', marginBottom: '15px' }}>Phân tích từ chuyên gia</h3>
+                  <div className="skin-analysis-text">
+                    {result.analysis || "Dựa trên hình ảnh, da bạn đang có dấu hiệu mất cân bằng độ ẩm và xuất hiện các điểm viêm nhẹ. Cần chú trọng bước làm sạch và cấp ẩm phục hồi."}
+                  </div>
+               </div>
+
+               <div className="skin-products-section">
+                  <h3 style={{ fontSize: '18px', color: '#1e293b', marginBottom: '15px' }}>Sản phẩm khuyên dùng</h3>
+                  <div className="skin-product-table-wrap">
+                    {result.products && result.products.length > 0 ? (
+                      <table className="skin-product-table">
+                        <tbody>
+                          {result.products.map((prod, i) => (
+                            <tr key={i} className="product-row">
+                              <td className="product-cell image">
+                                <img src={prod.image_url} alt={prod.name} />
+                              </td>
+                              <td className="product-cell info">
+                                <div className="product-type">{prod.type}</div>
+                                <div className="product-name">{prod.name}</div>
+                                <div className="product-usage">{prod.usage}</div>
+                              </td>
+                              <td className="product-cell action">
+                                <a href={prod.product_url} target="_blank" rel="noreferrer" className="btn-buy-now">Mua ngay</a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p style={{ color: '#64748b', fontStyle: 'italic' }}>Chưa có đề xuất sản phẩm cụ thể.</p>
+                    )}
+                  </div>
+               </div>
+
+               {isSevere && (
+                 <div className="medical-warning-box">
+                    <h4>⚠️ CẢNH BÁO TÌNH TRẠNG NẶNG</h4>
+                    <p style={{ fontSize: '14px', color: '#4b5563' }}>
+                      Tình trạng da của bạn có dấu hiệu viêm nhiễm sâu hoặc tổn thương diện rộng. Bạn nên đến gặp bác sĩ da liễu sớm để được điều trị chuyên môn.
+                    </p>
+                    <div className="clinic-list">
+                       <div className="clinic-item">
+                          <div className="clinic-name">Bệnh viện Da liễu TP.HCM</div>
+                          <div className="clinic-address">📍 2 Nguyễn Thông, Phường 6, Quận 3, TP.HCM</div>
+                          <div className="clinic-desc">Cơ sở y tế đầu ngành về da liễu tại miền Nam.</div>
+                       </div>
+                       <div className="clinic-item">
+                          <div className="clinic-name">Phòng khám Da liễu Sài Gòn (SGC)</div>
+                          <div className="clinic-address">📍 35A1 Ba Tháng Hai, Phường 11, Quận 10, TP.HCM</div>
+                          <div className="clinic-desc">Chuyên điều trị mụn và phục hồi da chuyên sâu.</div>
+                       </div>
+                    </div>
+                 </div>
+               )}
+            </div>
+          </div>
+          
+          <div className="skin-result-footer" style={{ padding: '20px 30px', borderTop: '1px solid #f1f5f9', textAlign: 'center' }}>
+             <button className="skin-btn-prod" style={{ maxWidth: '300px' }} onClick={() => this.props.navigate('/home#products')}>XEM TẤT CẢ SẢN PHẨM</button>
+          </div>
         </div>
       </div>
     );
