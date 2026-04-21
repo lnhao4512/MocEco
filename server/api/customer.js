@@ -288,7 +288,8 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
       product_url: `https://hasaki.vn/san-pham-ban-chay.html?product_id=${p.product_id}&item_id=${p.item_id}`
     }));
 
-    const analysisResult = {
+    // Dữ liệu lưu vào DB (không gồm products - tránh schema conflict)
+    const dbData = {
       userId,
       image,
       skinType: randomSkinType,
@@ -304,17 +305,18 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
       analysis: acneScore > 40 ? 
         "Da bạn đang gặp tình trạng mụn viêm lan rộng và hàng rào bảo vệ da bị tổn thương. Cần tập trung vào việc làm dịu da và sử dụng các hoạt chất kháng viêm chuyên biệt." : 
         "Nền da của bạn tương đối ổn định, tuy nhiên vùng chữ T vẫn còn hiện tượng bóng dầu và lỗ chân lông chưa được se khít hoàn toàn. Hãy chú trọng bước làm sạch và cấp nước.",
-      products: recommendedProducts,
       createdAt: new Date().toISOString()
     };
 
     // Lưu vào database
     try {
-      const savedAnalysis = await SkinAnalysisDAO.insert(analysisResult);
-      res.json({ success: true, data: savedAnalysis });
+      const savedAnalysis = await SkinAnalysisDAO.insert(dbData);
+      // Trả về kết quả có kèm products (products được gắn vào response, không lưu DB)
+      res.json({ success: true, data: { ...savedAnalysis.toObject(), products: recommendedProducts } });
     } catch (dbErr) {
       console.error("Save analysis error:", dbErr);
-      res.json({ success: false, message: 'Lỗi khi lưu kết quả phân tích vào database: ' + dbErr.message });
+      // Nếu DB lỗi, vẫn trả về kết quả để user thấy (không block UX)
+      res.json({ success: true, data: { ...dbData, products: recommendedProducts }, dbError: dbErr.message });
     }
   } catch (err) {
     console.error("FATAL SKIN ANALYSIS ERROR:", err);

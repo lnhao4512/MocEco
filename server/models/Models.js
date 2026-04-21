@@ -104,10 +104,18 @@ const HeroSchema = mongoose.Schema({
     video: { type: String, default: '' }  // URL to file
 }, { versionKey: false });
 
+const SkinProductSchema = mongoose.Schema({
+    name: String,
+    type: String,
+    usage: String,
+    image_url: String,
+    product_url: String
+}, { _id: false, versionKey: false });
+
 const SkinAnalysisSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    userId: { type: String, required: true }, // Changed to String to support both real and mock IDs
-    image: String, // Base64
+    userId: { type: String, required: true },
+    image: String,
     skinType: String, 
     concerns: {
         acne: { type: Number, default: 0 }, 
@@ -118,28 +126,20 @@ const SkinAnalysisSchema = mongoose.Schema({
     severity: String,
     conditions: String,
     analysis: String,
-    products: [
-        {
-            name: String,
-            type: String,
-            usage: String,
-            image_url: String,
-            product_url: String
-        }
-    ],
+    products: [SkinProductSchema],
     createdAt: { type: Date, default: Date.now }
 }, { versionKey: false });
 
 // models
-const Admin         = mongoose.model('Admin',         AdminSchema);
-const Category      = mongoose.model('Category',      CategorySchema);
-const Customer      = mongoose.model('Customer',      CustomerSchema);
-const Product       = mongoose.model('Product',       ProductSchema);
-const Cart          = mongoose.model('Cart',          CartSchema);
-const Order         = mongoose.model('Order',         OrderSchema);
-const About         = mongoose.model('About',         AboutSchema);
-const Hero          = mongoose.model('Hero',          HeroSchema);
-const SkinAnalysis  = mongoose.model('SkinAnalysis',  SkinAnalysisSchema);
+const Admin         = mongoose.models.Admin || mongoose.model('Admin', AdminSchema);
+const Category      = mongoose.models.Category || mongoose.model('Category', CategorySchema);
+const Customer      = mongoose.models.Customer || mongoose.model('Customer', CustomerSchema);
+const Product       = mongoose.models.Product || mongoose.model('Product', ProductSchema);
+const Cart          = mongoose.models.Cart || mongoose.model('Cart', CartSchema);
+const Order         = mongoose.models.Order || mongoose.model('Order', OrderSchema);
+const About         = mongoose.models.About || mongoose.model('About', AboutSchema);
+const Hero          = mongoose.models.Hero || mongoose.model('Hero', HeroSchema);
+const SkinAnalysis  = mongoose.models.SkinAnalysis || mongoose.model('SkinAnalysis', SkinAnalysisSchema);
 
 const CheckoutOrder = mongoose.model('CheckoutOrder', OrderSchema, 'orders');
 

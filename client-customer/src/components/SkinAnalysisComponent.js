@@ -198,9 +198,23 @@ class SkinAnalysis extends Component {
   };
 
   stopCamera = () => {
+    // 1. Stop MediaPipe Camera helper
+    if (this._camera) {
+        try { 
+            this._camera.stop(); 
+            this._camera = null; 
+        } catch(e) { console.warn("Stop MediaPipe Camera failed:", e); }
+    }
+
+    // 2. Stop individual tracks
     if (this.state.stream) {
       this.state.stream.getTracks().forEach(track => track.stop());
       this.setState({ stream: null });
+    }
+
+    // 3. Clear video element
+    if (this.videoRef.current) {
+        this.videoRef.current.srcObject = null;
     }
   };
 
