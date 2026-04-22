@@ -303,10 +303,10 @@ class SkinAnalysis extends Component {
         // Nếu da quá sáng (Glass Skin), lọc bỏ các điểm bóng loáng
         if (brightness > 230) continue; 
 
-        // Ngưỡng đỏ cân bằng (Không quá lệ thuộc vào Global Bias để tránh mù mụn diện rộng)
-        const baseThreshold = 1.35;
+        // Ngưỡng đỏ cân bằng (v17 - nâng ngưỡng cho face-only scan, tránh nhầm tone da ấm)
+        const baseThreshold = 1.5;
         const isActuallyRed = r > g * baseThreshold;
-        const isPurpleBase = r > 110 && b > 100 && r > g * 1.3; // Mụn thâm/nang
+        const isPurpleBase = r > 120 && b > 110 && r > g * 1.45; // Mụn thâm/nang
         
         if (isActuallyRed || isPurpleBase) {
           const offset = 8 * 4;
@@ -345,8 +345,8 @@ class SkinAnalysis extends Component {
       }
     }
     
-    // --- LỌC BÁO ĐỘNG GIẢ ---
-    if (redSpotPixels / analyzedPixels < 0.003) {
+    // --- LỌC BÁO ĐỘNG GIẢ (v17 - nâng ngưỡng cho face-only scan) ---
+    if (redSpotPixels / analyzedPixels < 0.008) {
         redSpotPixels = 0;
         acnePoints = [];
     }

@@ -318,7 +318,7 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
       const pixelAcneScore = hints ? Math.min(80, Math.round((hints.acneRate || 0) * 5)) : 15;
       acneScore = Math.round(baseScore * 0.6 + pixelAcneScore * 0.4);
     } else if (hints) {
-      acneScore = Math.min(80, Math.round((hints.acneRate || 0) * 5.5 + 5));
+      acneScore = Math.min(80, Math.round((hints.acneRate || 0) * 3.5 + 5));
     }
 
     if (hints) {
