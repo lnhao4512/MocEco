@@ -344,51 +344,62 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
         : 'Nền da tương đối ổn định. Duy trì làm sạch đúng cách và bảo vệ khỏi tia UV.');
 
     // ─── GỢI Ý SẢN PHẨM CÁ NHÂN HÓA THEO CHỈ SỐ DA (CÁ NHÂN HÓA CAO) ────────────────────────────────────
-    // ─── GỢI Ý SẢN PHẨM COCOON VIETNAM (CÁ NHÂN HÓA CAO) ────────────────────────────────────
+    // ─── GỢI Ý SẢN PHẨM: RANDOM BRAND MOOD (COCOON HOẶC HASAKI) ───────────────────────────
     const estimatedHydration = Math.max(30, Math.min(95, 100 - (textureScore * 0.8) - (poresScore * 0.5)));
     let recommendedProducts = [];
-
-    // 1. Chọn làm sạch (Sữa rửa mặt / Tẩy trang)
-    if (acneScore > 45 || aiAcneType === 'Cyst' || aiAcneType === 'Pustules' || aiAcneType === 'Papules') {
-      recommendedProducts.push(productPool.cleansers[0]); // Gel bí đao (Trị mụn)
-    } else if (textureScore > 40) {
-      recommendedProducts.push(productPool.cleansers[3]); // Tẩy da chết cà phê (Mịn da)
-    } else if (skinType === 'Da Nhạy Cảm' || skinType === 'Da Khô') {
-      recommendedProducts.push(productPool.cleansers[2]); // Gel hoa hồng (Dịu nhẹ)
-    } else {
-      recommendedProducts.push(productPool.cleansers[1]); // Nước tẩy trang bí đao
-    }
-
-    // 2. Chọn tinh chất (Serum)
-    if (aiAcneType === 'Blackheads' || aiAcneType === 'Whiteheads' || acneScore > 30) {
-      recommendedProducts.push(productPool.serums[1]); // Tinh chất bí đao (Giảm mụn)
-    } else if (aiConfidence > 0.5 && (aiAcneType === 'Papules' || aiAcneType === 'Cyst')) {
-      recommendedProducts.push(productPool.serums[1]); // Vẫn dùng bí đao để phục hồi
-    }
     
-    // Nếu có thâm hoặc muốn sáng da
-    if (acneScore < 40 && (textureScore > 30 || aiAcneType === 'Blackheads')) {
-      recommendedProducts.push(productPool.serums[0]); // Tinh chất nghệ C30 (Mờ thâm)
-    } else if (estimatedHydration < 50) {
-      recommendedProducts.push(productPool.serums[3]); // Tinh chất hoa hồng (Cấp ẩm)
-    }
+    // Chọn ngẫu nhiên brand mood (50/50)
+    const brandMood = Math.random() > 0.5 ? 'COCOON' : 'HASAKI';
+    console.log(`[AI] Recommendation Mood: ${brandMood}`);
 
-    // 3. Chọn dưỡng ẩm (Kem dưỡng / Thạch)
-    if (skinType === 'Da Dầu Mụn' || acneScore > 35) {
-      recommendedProducts.push(productPool.creams[0]); // Thạch bí đao (Mỏng nhẹ, kiềm dầu)
-    } else if (skinType === 'Da Khô' || estimatedHydration < 45) {
-      recommendedProducts.push(productPool.creams[1]); // Thạch hoa hồng (Cấp nước)
-    } else {
-      recommendedProducts.push(productPool.creams[2]); // Kem dưỡng nghệ (Sáng da)
-    }
+    if (brandMood === 'COCOON') {
+      // 🌿 PHONG CÁCH COCOON (THUẦN CHAY VIỆT NAM)
+      if (acneScore > 45 || aiAcneType === 'Cyst' || aiAcneType === 'Pustules') {
+        recommendedProducts.push(productPool.cleansers[0]); // Gel bí đao
+      } else if (skinType === 'Da Nhạy Cảm' || skinType === 'Da Khô') {
+        recommendedProducts.push(productPool.cleansers[4]); // Gel hoa hồng
+      } else {
+        recommendedProducts.push(productPool.cleansers[2]); // Nước tẩy trang bí đao
+      }
 
-    // 4. Chọn bổ sung (Toner / Chống nắng)
-    if (acneScore > 30 || poresScore > 40) {
+      if (acneScore > 30 || aiAcneType === 'Blackheads') {
+        recommendedProducts.push(productPool.serums[2]); // Tinh chất bí đao
+      } else {
+        recommendedProducts.push(productPool.serums[0]); // Tinh chất nghệ
+      }
+
+      if (skinType === 'Da Dầu Mụn' || acneScore > 35) {
+        recommendedProducts.push(productPool.creams[0]); // Thạch bí đao
+      } else {
+        recommendedProducts.push(productPool.creams[2]); // Thạch hoa hồng
+      }
+
       recommendedProducts.push(productPool.others[0]); // Toner bí đao
+      recommendedProducts.push(productPool.others[1]); // Kem chống nắng bí đao
     } else {
-      recommendedProducts.push(productPool.others[1]); // Toner hoa hồng
+      // 🏥 PHONG CÁCH HASAKI (DƯỢC MỸ PHẨM QUỐC TẾ)
+      if (acneScore > 45 || aiAcneType === 'Cyst' || aiAcneType === 'Pustules') {
+        recommendedProducts.push(productPool.cleansers[1]); // LRP Effaclar
+      } else if (skinType === 'Da Nhạy Cảm') {
+        recommendedProducts.push(productPool.cleansers[3]); // CeraVe Hydrating
+      } else {
+        recommendedProducts.push(productPool.cleansers[1]); // LRP
+      }
+
+      if (acneScore > 40 || aiAcneType === 'Blackheads') {
+        recommendedProducts.push(productPool.serums[3]); // Paula's Choice BHA
+      } else {
+        recommendedProducts.push(productPool.serums[1]); // LRP Hyalu B5
+      }
+
+      if (acneScore > 50) {
+        recommendedProducts.push(productPool.creams[1]); // Effaclar Duo+
+      } else {
+        recommendedProducts.push(productPool.creams[3]); // Neutrogena Hydro Boost
+      }
+
+      recommendedProducts.push(productPool.others[3]); // LRP Anthelios
     }
-    recommendedProducts.push(productPool.others[2]); // Kem chống nắng bí đao (Bắt buộc)
 
     // ─── LƯU VÀO DATABASE ────────────────────────────────────────────────────
     const conditionsText = aiAcneType
