@@ -344,54 +344,68 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
         : 'Nền da tương đối ổn định. Duy trì làm sạch đúng cách và bảo vệ khỏi tia UV.');
 
     // ─── GỢI Ý SẢN PHẨM CÁ NHÂN HÓA THEO CHỈ SỐ DA (CÁ NHÂN HÓA CAO) ────────────────────────────────────
-    // ─── GỢI Ý SẢN PHẨM: ĐA CHIẾN THUẬT (TOÀN BỘ, TRỘN LẪN HOẶC ĐAN XEN) ───────────────────────────
+    // ─── GỢI Ý SẢN PHẨM: ĐA CHIẾN THUẬT & TỐI ƯU THEO TÌNH TRẠNG DA ───────────────────────────
     const estimatedHydration = Math.max(30, Math.min(95, 100 - (textureScore * 0.8) - (poresScore * 0.5)));
     let recommendedProducts = [];
     
-    // Chọn ngẫu nhiên chiến thuật (0: Pure Cocoon, 1: Pure Hasaki, 2: Mixed, 3: Alternating)
+    // Chọn ngẫu nhiên chiến thuật (0: Toàn Cocoon, 1: Toàn Hasaki, 2: Trộn lẫn, 3: Đan xen)
     const strategy = Math.floor(Math.random() * 4);
-    console.log(`[AI] Recommendation Strategy: ${strategy}`);
-
-    const getCocoonProduct = (cat, idx) => productPool[cat][idx] || productPool[cat][0];
-    const getHasakiProduct = (cat, idx) => {
-        // Hasaki thường nằm ở các index lẻ hoặc cuối danh sách (dựa trên productPool đã merge)
-        const items = productPool[cat].filter(p => p.product_url.includes('hasaki.vn'));
-        return items[idx % items.length] || items[0];
+    
+    // Phân nhóm sản phẩm theo hãng để dễ truy xuất
+    const cocoon = {
+        cleansers: { acne: productPool.cleansers[0], dry: productPool.cleansers[4], oily: productPool.cleansers[2] },
+        serums: { acne: productPool.serums[2], bright: productPool.serums[0], hydration: productPool.serums[4] },
+        creams: { acne: productPool.creams[0], dry: productPool.creams[2], bright: productPool.creams[4] },
+        others: { toner: productPool.others[0], sun: productPool.others[1] }
+    };
+    const hasaki = {
+        cleansers: { acne: productPool.cleansers[1], dry: productPool.cleansers[3] },
+        serums: { acne: productPool.serums[3], repair: productPool.serums[1], soothing: productPool.serums[5] },
+        creams: { acne: productPool.creams[1], hydration: productPool.creams[3] },
+        others: { sun: productPool.others[3] }
     };
 
-    if (strategy === 0) { // TOÀN BỘ COCOON
-        if (acneScore > 45) recommendedProducts.push(productPool.cleansers[0]);
-        else recommendedProducts.push(productPool.cleansers[4]);
-        recommendedProducts.push(acneScore > 30 ? productPool.serums[2] : productPool.serums[0]);
-        recommendedProducts.push(skinType === 'Da Dầu Mụn' ? productPool.creams[0] : productPool.creams[2]);
-        recommendedProducts.push(productPool.others[0]);
-        recommendedProducts.push(productPool.others[1]);
+    if (strategy === 0) { // CHIẾN THUẬT: TOÀN BỘ COCOON
+        // 1. Làm sạch
+        if (acneScore > 40) recommendedProducts.push(cocoon.cleansers.acne);
+        else if (skinType === 'Da Khô') recommendedProducts.push(cocoon.cleansers.dry);
+        else recommendedProducts.push(cocoon.cleansers.oily);
+        // 2. Tinh chất
+        if (acneScore > 30) recommendedProducts.push(cocoon.serums.acne);
+        else recommendedProducts.push(cocoon.serums.bright);
+        // 3. Dưỡng ẩm
+        if (skinType === 'Da Dầu Mụn') recommendedProducts.push(cocoon.creams.acne);
+        else recommendedProducts.push(cocoon.creams.dry);
+        // 4. Bổ sung
+        recommendedProducts.push(cocoon.others.toner);
+        recommendedProducts.push(cocoon.others.sun);
     } 
-    else if (strategy === 1) { // TOÀN BỘ HASAKI
-        const hCleansers = productPool.cleansers.filter(p => p.product_url.includes('hasaki'));
-        const hSerums = productPool.serums.filter(p => p.product_url.includes('hasaki'));
-        const hCreams = productPool.creams.filter(p => p.product_url.includes('hasaki'));
-        const hOthers = productPool.others.filter(p => p.product_url.includes('hasaki'));
-
-        recommendedProducts.push(acneScore > 45 ? hCleansers[0] : hCleansers[1]);
-        recommendedProducts.push(acneScore > 30 ? hSerums[1] : hSerums[0]);
-        recommendedProducts.push(acneScore > 50 ? hCreams[0] : hCreams[1]);
-        recommendedProducts.push(hOthers[0]);
+    else if (strategy === 1) { // CHIẾN THUẬT: TOÀN BỘ HASAKI
+        // 1. Làm sạch
+        recommendedProducts.push(acneScore > 40 ? hasaki.cleansers.acne : hasaki.cleansers.dry);
+        // 2. Tinh chất
+        if (acneScore > 40) recommendedProducts.push(hasaki.serums.acne);
+        else recommendedProducts.push(hasaki.serums.repair);
+        // 3. Dưỡng ẩm
+        recommendedProducts.push(acneScore > 40 ? hasaki.creams.acne : hasaki.creams.hydration);
+        // 4. Chống nắng
+        recommendedProducts.push(hasaki.others.sun);
     }
-    else if (strategy === 2) { // TRỘN LẪN (MIXED - AI CHỌN MÓN TỐT NHẤT)
-        // AI ưu tiên Bí đao Cocoon để làm sạch nhưng dùng Serum phục hồi của Hasaki
-        recommendedProducts.push(productPool.cleansers[0]); // Cocoon
-        recommendedProducts.push(productPool.serums.find(p => p.name.includes('Hyalu B5'))); // Hasaki
-        recommendedProducts.push(productPool.creams[0]); // Cocoon
-        recommendedProducts.push(productPool.others.find(p => p.name.includes('Anthelios'))); // Hasaki
+    else if (strategy === 2) { // CHIẾN THUẬT: TRỘN LẪN (MIXED - ƯU TIÊN HIỆU QUẢ)
+        // Làm sạch bằng Cocoon (Lành tính)
+        recommendedProducts.push(acneScore > 40 ? cocoon.cleansers.acne : cocoon.cleansers.dry);
+        // Đặc trị bằng Hasaki (Mạnh mẽ)
+        recommendedProducts.push(acneScore > 40 ? hasaki.serums.acne : hasaki.serums.repair);
+        // Dưỡng ẩm bằng Cocoon (Mỏng nhẹ)
+        recommendedProducts.push(skinType === 'Da Dầu Mụn' ? cocoon.creams.acne : cocoon.creams.dry);
+        // Chống nắng Hasaki (Bảo vệ cao)
+        recommendedProducts.push(hasaki.others.sun);
     }
-    else { // ĐAN XEN (ALTERNATING)
-        recommendedProducts.push(productPool.cleansers[0]); // Cocoon
-        const hSerums = productPool.serums.filter(p => p.product_url.includes('hasaki'));
-        recommendedProducts.push(hSerums[0]); // Hasaki
-        recommendedProducts.push(productPool.creams[2]); // Cocoon
-        const hOthers = productPool.others.filter(p => p.product_url.includes('hasaki'));
-        recommendedProducts.push(hOthers[0]); // Hasaki
+    else { // CHIẾN THUẬT: ĐAN XEN (ALTERNATING)
+        recommendedProducts.push(cocoon.cleansers.acne); // Món 1: Cocoon
+        recommendedProducts.push(hasaki.serums.acne);    // Món 2: Hasaki
+        recommendedProducts.push(cocoon.creams.acne);    // Món 3: Cocoon
+        recommendedProducts.push(hasaki.others.sun);     // Món 4: Hasaki
     }
 
     // ─── LƯU VÀO DATABASE ────────────────────────────────────────────────────
