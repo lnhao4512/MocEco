@@ -19,33 +19,27 @@ const { spawn } = require('child_process');
 // Kho sản phẩm đa dạng từ nguồn ổn định (Dùng chung cho toàn module)
 const productPool = {
   cleansers: [
-    { name: "Sữa Rửa Mặt La Roche-Posay Effaclar Gel", type: "Sữa rửa mặt", usage: "Làm sạch sâu, kiềm dầu cho da mụn.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=LRP+Gel", product_url: "https://hasaki.vn/san-pham/gel-rua-mat-tao-bot-la-roche-posay-danh-cho-da-dau-nhay-cam-200ml-7947.html" },
-    { name: "Sữa Rửa Mặt CeraVe Hydrating Cleanser", type: "Sữa rửa mặt", usage: "Làm sạch dịu nhẹ, giữ ẩm cho da khô.", image_url: "https://placehold.co/100x100/e3f2fd/1565c0?text=CeraVe", product_url: "https://hasaki.vn/san-pham/sua-rua-mat-cerave-cho-da-thuong-den-kho-473ml-102963.html" },
-    { name: "Sữa Rửa Mặt Cetaphil Gentle Skin Cleanser", type: "Sữa rửa mặt", usage: "Công thức dịu lành cho da nhạy cảm.", image_url: "https://placehold.co/100x100/fce4ec/880e4f?text=Cetaphil", product_url: "https://hasaki.vn/san-pham/sua-rua-mat-cetaphil-diu-nhe-khong-xa-phong-473ml-moi-101588.html" },
-    { name: "Gel Rửa Mặt Bioderma Sebium", type: "Sữa rửa mặt", usage: "Kiểm soát bã nhờn, thanh lọc da dầu.", image_url: "https://placehold.co/100x100/ede7f6/4527a0?text=Bioderma", product_url: "https://hasaki.vn/catalogsearch/result?q=bioderma+sebium+gel+moussant" },
-    { name: "Sữa Rửa Mặt Simple Refreshing Wash", type: "Sữa rửa mặt", usage: "Làm sạch thoáng, không gây khô căng.", image_url: "https://placehold.co/100x100/e0f7fa/006064?text=Simple", product_url: "https://hasaki.vn/san-pham/sua-rua-mat-simple-giup-da-sach-thoang-150ml-101594.html" }
+    { name: "Gel Rửa Mặt Bí Đao Cocoon", type: "Sữa rửa mặt", usage: "Làm sạch sâu, giảm dầu thừa và mụn.", image_url: "https://image.cocoonvietnam.com/uploads/gel_rua_mat_bi_dao_140ml_bb337a7187.jpg", product_url: "https://cocoonvietnam.com/san-pham/gel-rua-mat-bi-dao-140ml" },
+    { name: "Nước Tẩy Trang Bí Đao Cocoon", type: "Tẩy trang", usage: "Làm sạch lớp trang điểm và bụi bẩn dịu nhẹ.", image_url: "https://image.cocoonvietnam.com/uploads/nuoc_tay_trang_bi_dao_500ml_3756858e74.jpg", product_url: "https://cocoonvietnam.com/san-pham/nuoc-tay-trang-bi-dao-500ml" },
+    { name: "Gel Rửa Mặt Hoa Hồng Cocoon", type: "Sữa rửa mặt", usage: "Làm sạch và cấp ẩm cho da khô, nhạy cảm.", image_url: "https://image.cocoonvietnam.com/uploads/gel_rua_mat_hoa_hong_140ml_f8b444766c.jpg", product_url: "https://cocoonvietnam.com/san-pham/gel-rua-mat-hoa-hong-140ml" },
+    { name: "Tẩy Da Chết Da Mặt Cà Phê Đắk Lắk", type: "Tẩy tế bào chết", usage: "Làm sạch da chết, giúp da mịn màng, đều màu.", image_url: "https://image.cocoonvietnam.com/uploads/ca_phe_dak_lak_lam_sach_da_chet_da_mat_150ml_77583f605a.jpg", product_url: "https://cocoonvietnam.com/san-pham/ca-phe-dak-lak-lam-sach-da-chet-da-mat" }
   ],
   serums: [
-    { name: "Serum La Roche-Posay Hyalu B5", type: "Serum", usage: "Phục hồi da, cấp ẩm và làm đầy nếp nhăn.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=Hyalu+B5", product_url: "https://hasaki.vn/catalogsearch/result?q=hyalu+b5+la+roche+posay" },
-    { name: "Serum L'Oreal Revitalift HA", type: "Serum", usage: "Cấp ẩm sâu, giúp da sáng mịn rạng rỡ.", image_url: "https://placehold.co/100x100/fff3e0/e65100?text=L%27Oreal+HA", product_url: "https://hasaki.vn/catalogsearch/result?q=loreal+revitalift+hyaluronic+acid+serum" },
-    { name: "Paula's Choice 2% BHA Liquid", type: "Tẩy tế bào chết", usage: "Làm sạch lỗ chân lông, giảm mụn ẩn.", image_url: "https://placehold.co/100x100/f3e5f5/6a1b9a?text=PC+BHA", product_url: "https://hasaki.vn/san-pham/dung-dich-tay-da-chet-paula-s-choice-2-bha-30ml-91146.html" },
-    { name: "Dưỡng Chất Vichy Mineral 89", type: "Serum", usage: "Củng cố hàng rào bảo vệ da, cấp ẩm.", image_url: "https://placehold.co/100x100/e8eaf6/283593?text=Vichy+89", product_url: "https://hasaki.vn/catalogsearch/result?q=vichy+mineral+89" },
-    { name: "Skin1004 Centella Ampoule", type: "Serum", usage: "Làm dịu da kích ứng, kháng viêm.", image_url: "https://placehold.co/100x100/e8f5e9/1b5e20?text=Skin1004", product_url: "https://hasaki.vn/catalogsearch/result?q=skin1004+centella" },
-    { name: "Serum L'Oreal Glycolic Bright", type: "Serum", usage: "Làm mờ thâm nám, giúp da đều màu.", image_url: "https://placehold.co/100x100/fff9c4/f57f17?text=Glycolic", product_url: "https://hasaki.vn/catalogsearch/result?q=loreal+glycolic+bright+serum" }
+    { name: "Tinh Chất Nghệ Hưng Yên C30", type: "Serum", usage: "Dưỡng sáng da, mờ thâm nám mạnh mẽ.", image_url: "https://image.cocoonvietnam.com/uploads/tinh_chat_nghe_hung_yen_c30_30ml_610f74577b.jpg", product_url: "https://cocoonvietnam.com/san-pham/tinh-chat-nghe-hung_yen-c30-30ml" },
+    { name: "Tinh Chất Bí Đao Cocoon", type: "Serum", usage: "Phục hồi da, giảm mụn và mẩn đỏ.", image_url: "https://image.cocoonvietnam.com/uploads/tinh_chat_bi_dao_70ml_69f000b213.jpg", product_url: "https://cocoonvietnam.com/san-pham/tinh-chat-bi-dao-70ml" },
+    { name: "Tinh Chất Nghệ Hưng Yên X22", type: "Serum", usage: "Chống oxy hóa, giúp da rạng rỡ.", image_url: "https://image.cocoonvietnam.com/uploads/tinh_chat_nghe_hung_yen_x22_30ml_3601f016e3.jpg", product_url: "https://cocoonvietnam.com/san-pham/tinh-chat-nghe-hung-yen-x22-30ml" },
+    { name: "Tinh Chất Hoa Hồng Cocoon", type: "Serum", usage: "Cấp ẩm sâu, phục hồi hàng rào bảo vệ da.", image_url: "https://image.cocoonvietnam.com/uploads/tinh_chat_hoa_hong_30ml_5e865f1423.jpg", product_url: "https://cocoonvietnam.com/san-pham/tinh-chat-hoa-hong-30ml" }
   ],
   creams: [
-    { name: "Kem Dưỡng SVR Sebiaclear Mat+Pores", type: "Kem dưỡng", usage: "Kiềm dầu và thu nhỏ lỗ chân lông.", image_url: "https://placehold.co/100x100/fbe9e7/bf360c?text=SVR", product_url: "https://hasaki.vn/san-pham/kem-duong-svr-kiem-dau-se-khit-lo-chan-long-40ml-moi-105689.html" },
-    { name: "Kem Dưỡng Neutrogena Hydro Boost", type: "Kem dưỡng", usage: "Cấp nước chuyên sâu cho da mềm mịn.", image_url: "https://placehold.co/100x100/e1f5fe/01579b?text=Neutrogena", product_url: "https://hasaki.vn/san-pham/kem-duong-am-neutrogena-cap-nuoc-cho-da-50g-90341.html" },
-    { name: "Effaclar Duo+ M La Roche-Posay", type: "Kem trị mụn", usage: "Giảm mụn viêm và ngăn ngừa vết thâm.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=Effaclar+Duo", product_url: "https://hasaki.vn/catalogsearch/result?q=effaclar+duo" },
-    { name: "Kem Dưỡng Hada Labo Advanced", type: "Kem dưỡng", usage: "Dưỡng ẩm sâu, ngăn ngừa lão hóa.", image_url: "https://placehold.co/100x100/fce4ec/880e4f?text=Hada+Labo", product_url: "https://hasaki.vn/catalogsearch/result?q=hada+labo+advanced+nourish+cream" },
-    { name: "Kem Dưỡng Bioderma Cicabio", type: "Kem dưỡng", usage: "Phục hồi da tổn thương, làm dịu da.", image_url: "https://placehold.co/100x100/ede7f6/4527a0?text=Cicabio", product_url: "https://hasaki.vn/catalogsearch/result?q=bioderma+cicabio" }
+    { name: "Thạch Bí Đao Cocoon", type: "Kem dưỡng", usage: "Cấp ẩm, kiềm dầu và làm dịu da mụn.", image_url: "https://image.cocoonvietnam.com/uploads/thach_bi_dao_duong_am_100ml_65809798e4.jpg", product_url: "https://cocoonvietnam.com/san-pham/thach-bi-dao-duong-am-100ml" },
+    { name: "Kem Dưỡng Thạch Hoa Hồng", type: "Kem dưỡng", usage: "Nuôi dưỡng da ẩm mượt suốt 24h.", image_url: "https://image.cocoonvietnam.com/uploads/thach_hoa_hong_duong_am_100ml_521a00a068.jpg", product_url: "https://cocoonvietnam.com/san-pham/thach-hoa-hong-duong-am-100ml" },
+    { name: "Kem Dưỡng Nghệ Hưng Yên", type: "Kem dưỡng", usage: "Dưỡng sáng da và mờ vết thâm.", image_url: "https://image.cocoonvietnam.com/uploads/kem_duong_nghe_hung_yen_50ml_95679f18a2.jpg", product_url: "https://cocoonvietnam.com/san-pham/kem-duong-nghe-hung-yen-50ml" }
   ],
   others: [
-    { name: "Sữa Chống Nắng Anessa Perfect UV", type: "Chống nắng", usage: "Bảo vệ tối đa, kiềm dầu tốt.", image_url: "https://placehold.co/100x100/fff8e1/f9a825?text=Anessa", product_url: "https://hasaki.vn/san-pham/sua-chong-nang-anessa-duong-da-kiem-dau-60ml-moi-119084.html" },
-    { name: "Kem Chống Nắng LRP Anthelios Fluid", type: "Chống nắng", usage: "Màng lọc Mexoryl 400 bảo vệ tối ưu.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=Anthelios", product_url: "https://hasaki.vn/catalogsearch/result?q=anthelios" },
-    { name: "Kem Chống Nắng Eucerin Sun Serum", type: "Chống nắng", usage: "Dưỡng sáng da và ngăn ngừa thâm nám.", image_url: "https://placehold.co/100x100/e3f2fd/1565c0?text=Eucerin+Sun", product_url: "https://hasaki.vn/catalogsearch/result?q=eucerin+sun+serum+spf50" },
-    { name: "Nước Hoa Hồng Mamonde Rose Water", type: "Toner", usage: "Làm dịu và se khít lỗ chân lông.", image_url: "https://placehold.co/100x100/fce4ec/880e4f?text=Mamonde", product_url: "https://hasaki.vn/catalogsearch/result?q=mamonde+rose+water+toner" },
-    { name: "Nước Cân Bằng Eucerin Dermopure", type: "Toner", usage: "Cân bằng độ pH cho da dầu mụn.", image_url: "https://placehold.co/100x100/e3f2fd/1565c0?text=Eucerin+Toner", product_url: "https://hasaki.vn/catalogsearch/result?q=eucerin+dermopure+toner" }
+    { name: "Nước Bí Đao Cân Bằng Da (Toner)", type: "Toner", usage: "Cân bằng pH, giảm dầu và mụn ẩn.", image_url: "https://image.cocoonvietnam.com/uploads/nuoc_bi_dao_can_bang_da_310ml_081a95e0c5.jpg", product_url: "https://cocoonvietnam.com/san-pham/nuoc-bi-dao-can-bang-da-310ml" },
+    { name: "Nước Hoa Hồng Cocoon (Toner)", type: "Toner", usage: "Cấp ẩm, làm mềm da ngay lập tức.", image_url: "https://image.cocoonvietnam.com/uploads/nuoc_hoa_hong_310ml_9436329c21.jpg", product_url: "https://cocoonvietnam.com/san-pham/nuoc-hoa-hong-310ml" },
+    { name: "Kem Chống Nắng Bí Đao Cocoon", type: "Chống nắng", usage: "Bảo vệ da phổ rộng, không gây bóng nhờn.", image_url: "https://image.cocoonvietnam.com/uploads/kem_chong_nang_bi_dao_50ml_643b468571.jpg", product_url: "https://cocoonvietnam.com/san-pham/kem-chong-nang-bi-dao-50ml" },
+    { name: "Son Dưỡng Dầu Dừa Bến Tre", type: "Son dưỡng", usage: "Dưỡng môi mềm mượt, chống nứt nẻ.", image_url: "https://image.cocoonvietnam.com/uploads/son_duong_dau_dua_ben_tre_5g_36437299a4.jpg", product_url: "https://cocoonvietnam.com/san-pham/son-duong-dau-dua-ben-tre" }
   ]
 };
 
@@ -343,59 +337,51 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
         : 'Nền da tương đối ổn định. Duy trì làm sạch đúng cách và bảo vệ khỏi tia UV.');
 
     // ─── GỢI Ý SẢN PHẨM CÁ NHÂN HÓA THEO CHỈ SỐ DA (CÁ NHÂN HÓA CAO) ────────────────────────────────────
-    const estimatedHydration = Math.max(30, Math.min(95, 100 - (hints?.textureRate || 0) * 0.8 - (hints?.poreRate || 0) * 0.5));
+    // ─── GỢI Ý SẢN PHẨM COCOON VIETNAM (CÁ NHÂN HÓA CAO) ────────────────────────────────────
+    const estimatedHydration = Math.max(30, Math.min(95, 100 - (textureScore * 0.8) - (poresScore * 0.5)));
     let recommendedProducts = [];
 
-    // 1. Chọn sữa rửa mặt phù hợp nhất
-    if (acneScore > 50 || aiAcneType === 'Cyst' || aiAcneType === 'Pustules') {
-      recommendedProducts.push(productPool.cleansers[0]); // LRP Effaclar (Mụn)
-    } else if (poresScore > 40 || aiAcneType === 'Blackheads') {
-      recommendedProducts.push(productPool.cleansers[3]); // Bioderma Sebium (Lỗ chân lông to)
-    } else if (estimatedHydration < 45) {
-      recommendedProducts.push(productPool.cleansers[1]); // CeraVe Hydrating (Khô)
-    } else if (skinType === 'Da Nhạy Cảm') {
-      recommendedProducts.push(productPool.cleansers[2]); // Cetaphil Gentle (Nhạy cảm)
+    // 1. Chọn làm sạch (Sữa rửa mặt / Tẩy trang)
+    if (acneScore > 45 || aiAcneType === 'Cyst' || aiAcneType === 'Pustules' || aiAcneType === 'Papules') {
+      recommendedProducts.push(productPool.cleansers[0]); // Gel bí đao (Trị mụn)
+    } else if (textureScore > 40) {
+      recommendedProducts.push(productPool.cleansers[3]); // Tẩy da chết cà phê (Mịn da)
+    } else if (skinType === 'Da Nhạy Cảm' || skinType === 'Da Khô') {
+      recommendedProducts.push(productPool.cleansers[2]); // Gel hoa hồng (Dịu nhẹ)
     } else {
-      recommendedProducts.push(productPool.cleansers[4]); // Simple Refreshing
+      recommendedProducts.push(productPool.cleansers[1]); // Nước tẩy trang bí đao
     }
 
-    // 2. Chọn serum (Được phép chọn 2 serum nếu có nhiều vấn đề)
-    if (acneScore > 55 || aiAcneType === 'Cyst') {
-      recommendedProducts.push(productPool.serums[4]); // Skin1004 Centella (Kháng viêm)
+    // 2. Chọn tinh chất (Serum)
+    if (aiAcneType === 'Blackheads' || aiAcneType === 'Whiteheads' || acneScore > 30) {
+      recommendedProducts.push(productPool.serums[1]); // Tinh chất bí đao (Giảm mụn)
+    } else if (aiConfidence > 0.5 && (aiAcneType === 'Papules' || aiAcneType === 'Cyst')) {
+      recommendedProducts.push(productPool.serums[1]); // Vẫn dùng bí đao để phục hồi
     }
-    if ((hints?.wrinkleRate || 0) > 20) {
-      recommendedProducts.push(productPool.serums[0]); // LRP Hyalu B5 (Lão hóa/phục hồi)
-    } else if (poresScore > 45 || aiAcneType === 'Blackheads' || aiAcneType === 'Whiteheads') {
-      recommendedProducts.push(productPool.serums[2]); // Paula's Choice BHA (Mụn ẩn, lỗ chân lông)
-    } else if (estimatedHydration < 50 && recommendedProducts.length < 3) {
-      recommendedProducts.push(productPool.serums[3]); // Vichy 89 (Cấp nước)
-    } else if (recommendedProducts.length < 3) {
-      recommendedProducts.push(productPool.serums[5]); // L'Oreal Glycolic (Sáng da)
-    }
-
-    // 3. Chọn kem dưỡng
-    if (acneScore > 60 || aiAcneType === 'Cyst' || aiAcneType === 'Pustules') {
-      recommendedProducts.push(productPool.creams[2]); // Effaclar Duo+ M (Trị mụn)
-    } else if (skinType === 'Da Nhạy Cảm') {
-      recommendedProducts.push(productPool.creams[4]); // Bioderma Cicabio (Phục hồi)
-    } else if (poresScore > 35) {
-      recommendedProducts.push(productPool.creams[0]); // SVR Sebiaclear (Kiềm dầu)
-    } else if (estimatedHydration < 45) {
-      recommendedProducts.push(productPool.creams[1]); // Neutrogena Hydro Boost (Cấp nước)
-    } else {
-      recommendedProducts.push(productPool.creams[3]); // Hada Labo Advanced (Nuôi dưỡng)
-    }
-
-    // 4. Chọn sản phẩm bổ sung (Toner / Chống nắng)
-    if (poresScore > 45 || skinType === 'Da Dầu Mụn') {
-      recommendedProducts.push(productPool.others[4]); // Eucerin Dermopure Toner
-      recommendedProducts.push(productPool.others[0]); // Anessa Perfect UV
+    
+    // Nếu có thâm hoặc muốn sáng da
+    if (acneScore < 40 && (textureScore > 30 || aiAcneType === 'Blackheads')) {
+      recommendedProducts.push(productPool.serums[0]); // Tinh chất nghệ C30 (Mờ thâm)
     } else if (estimatedHydration < 50) {
-      recommendedProducts.push(productPool.others[3]); // Mamonde Rose Water Toner
-      recommendedProducts.push(productPool.others[1]); // LRP Anthelios Fluid
-    } else {
-      recommendedProducts.push(productPool.others[2]); // Eucerin Sun Serum
+      recommendedProducts.push(productPool.serums[3]); // Tinh chất hoa hồng (Cấp ẩm)
     }
+
+    // 3. Chọn dưỡng ẩm (Kem dưỡng / Thạch)
+    if (skinType === 'Da Dầu Mụn' || acneScore > 35) {
+      recommendedProducts.push(productPool.creams[0]); // Thạch bí đao (Mỏng nhẹ, kiềm dầu)
+    } else if (skinType === 'Da Khô' || estimatedHydration < 45) {
+      recommendedProducts.push(productPool.creams[1]); // Thạch hoa hồng (Cấp nước)
+    } else {
+      recommendedProducts.push(productPool.creams[2]); // Kem dưỡng nghệ (Sáng da)
+    }
+
+    // 4. Chọn bổ sung (Toner / Chống nắng)
+    if (acneScore > 30 || poresScore > 40) {
+      recommendedProducts.push(productPool.others[0]); // Toner bí đao
+    } else {
+      recommendedProducts.push(productPool.others[1]); // Toner hoa hồng
+    }
+    recommendedProducts.push(productPool.others[2]); // Kem chống nắng bí đao (Bắt buộc)
 
     // ─── LƯU VÀO DATABASE ────────────────────────────────────────────────────
     const conditionsText = aiAcneType
