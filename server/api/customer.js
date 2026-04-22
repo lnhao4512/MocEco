@@ -16,29 +16,36 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 
-// Kho sản phẩm đa dạng từ nguồn ổn định (Dùng chung cho toàn module)
+// Kho sản phẩm đa dạng kết hợp Cocoon & Hasaki (Dùng chung cho toàn module)
 const productPool = {
   cleansers: [
     { name: "Gel Rửa Mặt Bí Đao Cocoon", type: "Sữa rửa mặt", usage: "Làm sạch sâu, giảm dầu thừa và mụn.", image_url: "https://image.cocoonvietnam.com/uploads/gel_rua_mat_bi_dao_140ml_bb337a7187.jpg", product_url: "https://cocoonvietnam.com/san-pham/gel-rua-mat-bi-dao-140ml" },
+    { name: "Sữa Rửa Mặt La Roche-Posay Effaclar Gel", type: "Sữa rửa mặt", usage: "Làm sạch sâu, kiềm dầu cho da mụn.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=LRP+Gel", product_url: "https://hasaki.vn/san-pham/gel-rua-mat-tao-bot-la-roche-posay-danh-cho-da-dau-nhay-cam-200ml-7947.html" },
     { name: "Nước Tẩy Trang Bí Đao Cocoon", type: "Tẩy trang", usage: "Làm sạch lớp trang điểm và bụi bẩn dịu nhẹ.", image_url: "https://image.cocoonvietnam.com/uploads/nuoc_tay_trang_bi_dao_500ml_3756858e74.jpg", product_url: "https://cocoonvietnam.com/san-pham/nuoc-tay-trang-bi-dao-500ml" },
+    { name: "Sữa Rửa Mặt CeraVe Hydrating Cleanser", type: "Sữa rửa mặt", usage: "Làm sạch dịu nhẹ, giữ ẩm cho da khô.", image_url: "https://placehold.co/100x100/e3f2fd/1565c0?text=CeraVe", product_url: "https://hasaki.vn/san-pham/sua-rua-mat-cerave-cho-da-thuong-den-kho-473ml-102963.html" },
     { name: "Gel Rửa Mặt Hoa Hồng Cocoon", type: "Sữa rửa mặt", usage: "Làm sạch và cấp ẩm cho da khô, nhạy cảm.", image_url: "https://image.cocoonvietnam.com/uploads/gel_rua_mat_hoa_hong_140ml_f8b444766c.jpg", product_url: "https://cocoonvietnam.com/san-pham/gel-rua-mat-hoa-hong-140ml" },
     { name: "Tẩy Da Chết Da Mặt Cà Phê Đắk Lắk", type: "Tẩy tế bào chết", usage: "Làm sạch da chết, giúp da mịn màng, đều màu.", image_url: "https://image.cocoonvietnam.com/uploads/ca_phe_dak_lak_lam_sach_da_chet_da_mat_150ml_77583f605a.jpg", product_url: "https://cocoonvietnam.com/san-pham/ca-phe-dak-lak-lam-sach-da-chet-da-mat" }
   ],
   serums: [
     { name: "Tinh Chất Nghệ Hưng Yên C30", type: "Serum", usage: "Dưỡng sáng da, mờ thâm nám mạnh mẽ.", image_url: "https://image.cocoonvietnam.com/uploads/tinh_chat_nghe_hung_yen_c30_30ml_610f74577b.jpg", product_url: "https://cocoonvietnam.com/san-pham/tinh-chat-nghe-hung_yen-c30-30ml" },
+    { name: "Serum La Roche-Posay Hyalu B5", type: "Serum", usage: "Phục hồi da, cấp ẩm và làm đầy nếp nhăn.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=Hyalu+B5", product_url: "https://hasaki.vn/catalogsearch/result?q=hyalu+b5+la+roche+posay" },
     { name: "Tinh Chất Bí Đao Cocoon", type: "Serum", usage: "Phục hồi da, giảm mụn và mẩn đỏ.", image_url: "https://image.cocoonvietnam.com/uploads/tinh_chat_bi_dao_70ml_69f000b213.jpg", product_url: "https://cocoonvietnam.com/san-pham/tinh-chat-bi-dao-70ml" },
-    { name: "Tinh Chất Nghệ Hưng Yên X22", type: "Serum", usage: "Chống oxy hóa, giúp da rạng rỡ.", image_url: "https://image.cocoonvietnam.com/uploads/tinh_chat_nghe_hung_yen_x22_30ml_3601f016e3.jpg", product_url: "https://cocoonvietnam.com/san-pham/tinh-chat-nghe-hung-yen-x22-30ml" },
-    { name: "Tinh Chất Hoa Hồng Cocoon", type: "Serum", usage: "Cấp ẩm sâu, phục hồi hàng rào bảo vệ da.", image_url: "https://image.cocoonvietnam.com/uploads/tinh_chat_hoa_hong_30ml_5e865f1423.jpg", product_url: "https://cocoonvietnam.com/san-pham/tinh-chat-hoa-hong-30ml" }
+    { name: "Paula's Choice 2% BHA Liquid", type: "Tẩy tế bào chết", usage: "Làm sạch lỗ chân lông, giảm mụn ẩn.", image_url: "https://placehold.co/100x100/f3e5f5/6a1b9a?text=PC+BHA", product_url: "https://hasaki.vn/san-pham/dung-dich-tay-da-chet-paula-s-choice-2-bha-30ml-91146.html" },
+    { name: "Tinh Chất Hoa Hồng Cocoon", type: "Serum", usage: "Cấp ẩm sâu, phục hồi hàng rào bảo vệ da.", image_url: "https://image.cocoonvietnam.com/uploads/tinh_chat_hoa_hong_30ml_5e865f1423.jpg", product_url: "https://cocoonvietnam.com/san-pham/tinh-chat-hoa-hong-30ml" },
+    { name: "Skin1004 Centella Ampoule", type: "Serum", usage: "Làm dịu da kích ứng, kháng viêm.", image_url: "https://placehold.co/100x100/e8f5e9/1b5e20?text=Skin1004", product_url: "https://hasaki.vn/catalogsearch/result?q=skin1004+centella" }
   ],
   creams: [
     { name: "Thạch Bí Đao Cocoon", type: "Kem dưỡng", usage: "Cấp ẩm, kiềm dầu và làm dịu da mụn.", image_url: "https://image.cocoonvietnam.com/uploads/thach_bi_dao_duong_am_100ml_65809798e4.jpg", product_url: "https://cocoonvietnam.com/san-pham/thach-bi-dao-duong-am-100ml" },
+    { name: "Effaclar Duo+ M La Roche-Posay", type: "Kem trị mụn", usage: "Giảm mụn viêm và ngăn ngừa vết thâm.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=Effaclar+Duo", product_url: "https://hasaki.vn/catalogsearch/result?q=effaclar+duo" },
     { name: "Kem Dưỡng Thạch Hoa Hồng", type: "Kem dưỡng", usage: "Nuôi dưỡng da ẩm mượt suốt 24h.", image_url: "https://image.cocoonvietnam.com/uploads/thach_hoa_hong_duong_am_100ml_521a00a068.jpg", product_url: "https://cocoonvietnam.com/san-pham/thach-hoa-hong-duong-am-100ml" },
+    { name: "Kem Dưỡng Neutrogena Hydro Boost", type: "Kem dưỡng", usage: "Cấp nước chuyên sâu cho da mềm mịn.", image_url: "https://placehold.co/100x100/e1f5fe/01579b?text=Neutrogena", product_url: "https://hasaki.vn/san-pham/kem-duong-am-neutrogena-cap-nuoc-cho-da-50g-90341.html" },
     { name: "Kem Dưỡng Nghệ Hưng Yên", type: "Kem dưỡng", usage: "Dưỡng sáng da và mờ vết thâm.", image_url: "https://image.cocoonvietnam.com/uploads/kem_duong_nghe_hung_yen_50ml_95679f18a2.jpg", product_url: "https://cocoonvietnam.com/san-pham/kem-duong-nghe-hung-yen-50ml" }
   ],
   others: [
     { name: "Nước Bí Đao Cân Bằng Da (Toner)", type: "Toner", usage: "Cân bằng pH, giảm dầu và mụn ẩn.", image_url: "https://image.cocoonvietnam.com/uploads/nuoc_bi_dao_can_bang_da_310ml_081a95e0c5.jpg", product_url: "https://cocoonvietnam.com/san-pham/nuoc-bi-dao-can-bang-da-310ml" },
-    { name: "Nước Hoa Hồng Cocoon (Toner)", type: "Toner", usage: "Cấp ẩm, làm mềm da ngay lập tức.", image_url: "https://image.cocoonvietnam.com/uploads/nuoc_hoa_hong_310ml_9436329c21.jpg", product_url: "https://cocoonvietnam.com/san-pham/nuoc-hoa-hong-310ml" },
     { name: "Kem Chống Nắng Bí Đao Cocoon", type: "Chống nắng", usage: "Bảo vệ da phổ rộng, không gây bóng nhờn.", image_url: "https://image.cocoonvietnam.com/uploads/kem_chong_nang_bi_dao_50ml_643b468571.jpg", product_url: "https://cocoonvietnam.com/san-pham/kem-chong-nang-bi-dao-50ml" },
+    { name: "Nước Hoa Hồng Cocoon (Toner)", type: "Toner", usage: "Cấp ẩm, làm mềm da ngay lập tức.", image_url: "https://image.cocoonvietnam.com/uploads/nuoc_hoa_hong_310ml_9436329c21.jpg", product_url: "https://cocoonvietnam.com/san-pham/nuoc-hoa-hong-310ml" },
+    { name: "Kem Chống Nắng LRP Anthelios Fluid", type: "Chống nắng", usage: "Màng lọc Mexoryl 400 bảo vệ tối ưu.", image_url: "https://placehold.co/100x100/e8f5e9/374d29?text=Anthelios", product_url: "https://hasaki.vn/catalogsearch/result?q=anthelios" },
     { name: "Son Dưỡng Dầu Dừa Bến Tre", type: "Son dưỡng", usage: "Dưỡng môi mềm mượt, chống nứt nẻ.", image_url: "https://image.cocoonvietnam.com/uploads/son_duong_dau_dua_ben_tre_5g_36437299a4.jpg", product_url: "https://cocoonvietnam.com/san-pham/son-duong-dau-dua-ben-tre" }
   ]
 };
