@@ -344,61 +344,54 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
         : 'Nền da tương đối ổn định. Duy trì làm sạch đúng cách và bảo vệ khỏi tia UV.');
 
     // ─── GỢI Ý SẢN PHẨM CÁ NHÂN HÓA THEO CHỈ SỐ DA (CÁ NHÂN HÓA CAO) ────────────────────────────────────
-    // ─── GỢI Ý SẢN PHẨM: RANDOM BRAND MOOD (COCOON HOẶC HASAKI) ───────────────────────────
+    // ─── GỢI Ý SẢN PHẨM: ĐA CHIẾN THUẬT (TOÀN BỘ, TRỘN LẪN HOẶC ĐAN XEN) ───────────────────────────
     const estimatedHydration = Math.max(30, Math.min(95, 100 - (textureScore * 0.8) - (poresScore * 0.5)));
     let recommendedProducts = [];
     
-    // Chọn ngẫu nhiên brand mood (50/50)
-    const brandMood = Math.random() > 0.5 ? 'COCOON' : 'HASAKI';
-    console.log(`[AI] Recommendation Mood: ${brandMood}`);
+    // Chọn ngẫu nhiên chiến thuật (0: Pure Cocoon, 1: Pure Hasaki, 2: Mixed, 3: Alternating)
+    const strategy = Math.floor(Math.random() * 4);
+    console.log(`[AI] Recommendation Strategy: ${strategy}`);
 
-    if (brandMood === 'COCOON') {
-      // 🌿 PHONG CÁCH COCOON (THUẦN CHAY VIỆT NAM)
-      if (acneScore > 45 || aiAcneType === 'Cyst' || aiAcneType === 'Pustules') {
-        recommendedProducts.push(productPool.cleansers[0]); // Gel bí đao
-      } else if (skinType === 'Da Nhạy Cảm' || skinType === 'Da Khô') {
-        recommendedProducts.push(productPool.cleansers[4]); // Gel hoa hồng
-      } else {
-        recommendedProducts.push(productPool.cleansers[2]); // Nước tẩy trang bí đao
-      }
+    const getCocoonProduct = (cat, idx) => productPool[cat][idx] || productPool[cat][0];
+    const getHasakiProduct = (cat, idx) => {
+        // Hasaki thường nằm ở các index lẻ hoặc cuối danh sách (dựa trên productPool đã merge)
+        const items = productPool[cat].filter(p => p.product_url.includes('hasaki.vn'));
+        return items[idx % items.length] || items[0];
+    };
 
-      if (acneScore > 30 || aiAcneType === 'Blackheads') {
-        recommendedProducts.push(productPool.serums[2]); // Tinh chất bí đao
-      } else {
-        recommendedProducts.push(productPool.serums[0]); // Tinh chất nghệ
-      }
+    if (strategy === 0) { // TOÀN BỘ COCOON
+        if (acneScore > 45) recommendedProducts.push(productPool.cleansers[0]);
+        else recommendedProducts.push(productPool.cleansers[4]);
+        recommendedProducts.push(acneScore > 30 ? productPool.serums[2] : productPool.serums[0]);
+        recommendedProducts.push(skinType === 'Da Dầu Mụn' ? productPool.creams[0] : productPool.creams[2]);
+        recommendedProducts.push(productPool.others[0]);
+        recommendedProducts.push(productPool.others[1]);
+    } 
+    else if (strategy === 1) { // TOÀN BỘ HASAKI
+        const hCleansers = productPool.cleansers.filter(p => p.product_url.includes('hasaki'));
+        const hSerums = productPool.serums.filter(p => p.product_url.includes('hasaki'));
+        const hCreams = productPool.creams.filter(p => p.product_url.includes('hasaki'));
+        const hOthers = productPool.others.filter(p => p.product_url.includes('hasaki'));
 
-      if (skinType === 'Da Dầu Mụn' || acneScore > 35) {
-        recommendedProducts.push(productPool.creams[0]); // Thạch bí đao
-      } else {
-        recommendedProducts.push(productPool.creams[2]); // Thạch hoa hồng
-      }
-
-      recommendedProducts.push(productPool.others[0]); // Toner bí đao
-      recommendedProducts.push(productPool.others[1]); // Kem chống nắng bí đao
-    } else {
-      // 🏥 PHONG CÁCH HASAKI (DƯỢC MỸ PHẨM QUỐC TẾ)
-      if (acneScore > 45 || aiAcneType === 'Cyst' || aiAcneType === 'Pustules') {
-        recommendedProducts.push(productPool.cleansers[1]); // LRP Effaclar
-      } else if (skinType === 'Da Nhạy Cảm') {
-        recommendedProducts.push(productPool.cleansers[3]); // CeraVe Hydrating
-      } else {
-        recommendedProducts.push(productPool.cleansers[1]); // LRP
-      }
-
-      if (acneScore > 40 || aiAcneType === 'Blackheads') {
-        recommendedProducts.push(productPool.serums[3]); // Paula's Choice BHA
-      } else {
-        recommendedProducts.push(productPool.serums[1]); // LRP Hyalu B5
-      }
-
-      if (acneScore > 50) {
-        recommendedProducts.push(productPool.creams[1]); // Effaclar Duo+
-      } else {
-        recommendedProducts.push(productPool.creams[3]); // Neutrogena Hydro Boost
-      }
-
-      recommendedProducts.push(productPool.others[3]); // LRP Anthelios
+        recommendedProducts.push(acneScore > 45 ? hCleansers[0] : hCleansers[1]);
+        recommendedProducts.push(acneScore > 30 ? hSerums[1] : hSerums[0]);
+        recommendedProducts.push(acneScore > 50 ? hCreams[0] : hCreams[1]);
+        recommendedProducts.push(hOthers[0]);
+    }
+    else if (strategy === 2) { // TRỘN LẪN (MIXED - AI CHỌN MÓN TỐT NHẤT)
+        // AI ưu tiên Bí đao Cocoon để làm sạch nhưng dùng Serum phục hồi của Hasaki
+        recommendedProducts.push(productPool.cleansers[0]); // Cocoon
+        recommendedProducts.push(productPool.serums.find(p => p.name.includes('Hyalu B5'))); // Hasaki
+        recommendedProducts.push(productPool.creams[0]); // Cocoon
+        recommendedProducts.push(productPool.others.find(p => p.name.includes('Anthelios'))); // Hasaki
+    }
+    else { // ĐAN XEN (ALTERNATING)
+        recommendedProducts.push(productPool.cleansers[0]); // Cocoon
+        const hSerums = productPool.serums.filter(p => p.product_url.includes('hasaki'));
+        recommendedProducts.push(hSerums[0]); // Hasaki
+        recommendedProducts.push(productPool.creams[2]); // Cocoon
+        const hOthers = productPool.others.filter(p => p.product_url.includes('hasaki'));
+        recommendedProducts.push(hOthers[0]); // Hasaki
     }
 
     // ─── LƯU VÀO DATABASE ────────────────────────────────────────────────────
