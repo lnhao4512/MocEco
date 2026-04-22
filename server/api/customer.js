@@ -208,18 +208,10 @@ router.get('/hero', async function (req, res) {
     res.json(result);
 });
 
-// Hàm chạy dự đoán từ mô hình AI (Python)
+// Hàm chạy dự đoán từ mô hình AI (Python TFLite - nhẹ ~50MB RAM)
 function runAIPrediction(base64Image) {
   return new Promise((resolve) => {
-    // RENDER FREE TIER OOM PREVENTION:
-    // TensorFlow requires ~400MB RAM. Render Free only has 512MB.
-    // Spawning Python will crash the entire Node.js server (OOM Kill -> 502 error).
-    if (process.env.RENDER) {
-        console.warn("[AI] Disabled on Render Free Tier to prevent 502 OOM crash. Using fallback pixel heuristic.");
-        return resolve(null);
-    }
-
-    console.log("--- BẮT ĐẦU GỌI AI PREDICTION ---");
+    console.log("--- BẮT ĐẦU GỌI AI PREDICTION (TFLite) ---");
     try {
       const rootPath = path.join(__dirname, '../../');
       const predictScript = path.join(rootPath, 'predict.py');
@@ -229,7 +221,9 @@ function runAIPrediction(base64Image) {
         return resolve(null);
       }
 
-      const python = spawn('python', ['predict.py'], { cwd: rootPath });
+      // Thử python3 trước (Linux/Render), fallback sang python (Windows)
+      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+      const python = spawn(pythonCmd, ['predict.py'], { cwd: rootPath });
       let result = '';
       let error = '';
 
@@ -237,7 +231,7 @@ function runAIPrediction(base64Image) {
         console.error("AI TIMED OUT");
         python.kill();
         resolve(null);
-      }, 15000); 
+      }, 20000); 
 
       // Bắt lỗi stream để tránh Node.js sập (EPIPE)
       python.stdin.on('error', (err) => {
@@ -295,34 +289,32 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
         console.warn('[AI] Model error:', aiErr.message);
     }
 
-    // ─── TÍNH ĐIỂM DỰA TRÊN LOẠI MỤN AI PHÁT HIỆN ─────────────────────────
-    // Mapping loại mụn → acne score cơ sở
-    const ACNE_BASE_SCORES = {
-      'Blackheads': 18,  // Mụn đầu đen - nhẹ
-      'Whiteheads': 22,  // Mụn đầu trắng - nhẹ
-      'Papules':    50,  // Mụn sần - trung bình
-      'Pustules':   60,  // Mụn mủ - trung bình/nặng
-      'Cyst':       82   // U nang - nặng
-    };
-
+    // ─── TÍNH ĐIỂM: ƯU TIÊN DỮ LIỆU TỪ MODEL AI ĐÃ TRAIN ─────────────────
     let acneScore = 15;
     let poresScore = 10;
+    let textureScore = 10;
     let aiAcneType = null;
     let aiConfidence = 0;
 
-    if (aiResult && aiResult.success && aiResult.confidence > 0.4) {
-      aiAcneType = aiResult.prediction;       // e.g. 'Cyst', 'Papules'
+    if (aiResult && aiResult.success && aiResult.confidence > 0.3) {
+      // ═══ NGUỒN CHÍNH: KẾT QUẢ TỪ MODEL MOBILENETV2 ĐÃ TRAIN ═══
+      aiAcneType = aiResult.prediction;
       aiConfidence = aiResult.confidence;
-      const baseScore = ACNE_BASE_SCORES[aiAcneType] || 20;
-      // Kết hợp: 60% từ AI model + 40% từ pixel scan
-      const pixelAcneScore = hints ? Math.min(80, Math.round((hints.acneRate || 0) * 5)) : 15;
-      acneScore = Math.round(baseScore * 0.6 + pixelAcneScore * 0.4);
-    } else if (hints) {
-      acneScore = Math.min(80, Math.round((hints.acneRate || 0) * 3.5 + 5));
-    }
-
-    if (hints) {
-      poresScore = Math.min(100, Math.round((hints.poreRate || 0) * 2.2 + 5));
+      
+      // Lấy trực tiếp từ model (đã được map theo dữ liệu train)
+      acneScore = Math.round((aiResult.acne_score_hint || 30) * aiConfidence + (1 - aiConfidence) * 10);
+      textureScore = Math.round((aiResult.texture_score_hint || 20) * aiConfidence + (1 - aiConfidence) * 10);
+      poresScore = Math.round((aiResult.pores_score_hint || 25) * aiConfidence + (1 - aiConfidence) * 10);
+      
+      console.log(`[AI] Model-driven scores → Acne: ${acneScore}, Texture: ${textureScore}, Pores: ${poresScore}`);
+    } else {
+      // ═══ FALLBACK: HEURISTIC PIXEL SCAN (chỉ khi model không chạy được) ═══
+      console.log('[AI] Model unavailable, using pixel heuristic fallback');
+      if (hints) {
+        acneScore = Math.min(80, Math.round((hints.acneRate || 0) * 3.5 + 5));
+        textureScore = Math.min(80, Math.round((hints.textureRate || 0) * 0.9 + 5));
+        poresScore = Math.min(100, Math.round((hints.poreRate || 0) * 2.2 + 5));
+      }
     }
 
     // ─── XÁC ĐỊNH LOẠI DA ────────────────────────────────────────────────────
@@ -418,9 +410,9 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
       conditions: conditionsText,
       concerns: {
         acne:      acneScore,
-        texture:   Math.min(100, Math.round((hints?.textureRate || 0) * 0.9 + 5)),
+        texture:   textureScore,
         pores:     poresScore,
-        wrinkles:  Math.min(100, Math.round((hints?.wrinkleRate || 0) * 1.8 + 3)),
+        wrinkles:  Math.min(100, Math.round((hints?.wrinkleRate || 0) * 1.2 + 3)),
         hydration: estimatedHydration
       },
       analysis: analysisText,
