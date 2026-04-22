@@ -28,6 +28,7 @@ class SkinAnalysis extends Component {
     this.overlayRef = React.createRef();
     this._faceMesh = null;
     this._camera = null;
+    this.faceBoundingBox = null;
   }
 
   componentDidMount() {
@@ -104,29 +105,47 @@ class SkinAnalysis extends Component {
   };
 
   onAIResults = (results) => {
-    if (!this.overlayRef.current || !this.videoRef.current) return;
-    
-    const canvasCtx = this.overlayRef.current.getContext('2d');
-    const width = this.overlayRef.current.width;
-    const height = this.overlayRef.current.height;
-
-    canvasCtx.save();
-    canvasCtx.clearRect(0, 0, width, height);
-
+    // 1. Luôn cập nhật bounding box nếu có khuôn mặt (dùng cho cả camera và upload)
     if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-      if (!this.state.isRealtimeActive) this.setState({ isRealtimeActive: true });
-      
-      // eslint-disable-next-line no-undef
-      drawConnectors(canvasCtx, results.multiFaceLandmarks[0], FACEMESH_TESSELATION, 
-        {color: 'rgba(55, 77, 41, 0.15)', lineWidth: 1});
-      // eslint-disable-next-line no-undef
-      drawConnectors(canvasCtx, results.multiFaceLandmarks[0], FACEMESH_RIGHT_EYE, {color: '#db9b91'});
-      // eslint-disable-next-line no-undef
-      drawConnectors(canvasCtx, results.multiFaceLandmarks[0], FACEMESH_LEFT_EYE, {color: '#db9b91'});
+      if (this.state.mode === 'camera' && !this.state.isRealtimeActive) {
+         this.setState({ isRealtimeActive: true });
+      }
+      const landmarks = results.multiFaceLandmarks[0];
+      let minX = 1, minY = 1, maxX = 0, maxY = 0;
+      for (let i = 0; i < landmarks.length; i++) {
+        if (landmarks[i].x < minX) minX = landmarks[i].x;
+        if (landmarks[i].y < minY) minY = landmarks[i].y;
+        if (landmarks[i].x > maxX) maxX = landmarks[i].x;
+        if (landmarks[i].y > maxY) maxY = landmarks[i].y;
+      }
+      this.faceBoundingBox = { minX, minY, maxX, maxY };
     } else {
-      if (this.state.isRealtimeActive) this.setState({ isRealtimeActive: false });
+      if (this.state.mode === 'camera' && this.state.isRealtimeActive) {
+         this.setState({ isRealtimeActive: false });
+      }
+      this.faceBoundingBox = null;
     }
-    canvasCtx.restore();
+
+    // 2. Vẽ lưới nếu đang ở chế độ camera
+    if (this.state.mode === 'camera' && this.overlayRef.current && this.videoRef.current) {
+        const canvasCtx = this.overlayRef.current.getContext('2d');
+        const width = this.overlayRef.current.width;
+        const height = this.overlayRef.current.height;
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, width, height);
+
+        if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+          // eslint-disable-next-line no-undef
+          drawConnectors(canvasCtx, results.multiFaceLandmarks[0], FACEMESH_TESSELATION, 
+            {color: 'rgba(55, 77, 41, 0.15)', lineWidth: 1});
+          // eslint-disable-next-line no-undef
+          drawConnectors(canvasCtx, results.multiFaceLandmarks[0], FACEMESH_RIGHT_EYE, {color: '#db9b91'});
+          // eslint-disable-next-line no-undef
+          drawConnectors(canvasCtx, results.multiFaceLandmarks[0], FACEMESH_LEFT_EYE, {color: '#db9b91'});
+        }
+        canvasCtx.restore();
+    }
   };
 
   startAICamera = () => {
@@ -236,11 +255,45 @@ class SkinAnalysis extends Component {
     let redSpotPixels = 0, darkPits = 0, textureVariation = 0, wrinkleEdges = 0, analyzedPixels = 0;
     let acnePoints = [];
     
-    const startX = Math.floor(width * 0.1), endX = Math.floor(width * 0.9);
-    const startY = Math.floor(height * 0.1), endY = Math.floor(height * 0.9);
+    let startX = Math.floor(width * 0.1), endX = Math.floor(width * 0.9);
+    let startY = Math.floor(height * 0.1), endY = Math.floor(height * 0.9);
+    
+    let centerX = width / 2, centerY = height / 2, radiusX = width / 2, radiusY = height / 2;
+    let useEllipse = false;
+
+    if (this.faceBoundingBox) {
+        // Thu hẹp vùng quét chính xác vào khuôn mặt (thêm margin nhỏ)
+        const marginX = 0.02;
+        const marginY = 0.02;
+        
+        const pMinX = Math.max(0, this.faceBoundingBox.minX - marginX);
+        const pMaxX = Math.min(1, this.faceBoundingBox.maxX + marginX);
+        const pMinY = Math.max(0, this.faceBoundingBox.minY - marginY);
+        const pMaxY = Math.min(1, this.faceBoundingBox.maxY + marginY);
+        
+        startX = Math.floor(width * pMinX);
+        endX = Math.floor(width * pMaxX);
+        startY = Math.floor(height * pMinY);
+        endY = Math.floor(height * pMaxY);
+
+        centerX = (startX + endX) / 2;
+        centerY = (startY + endY) / 2;
+        radiusX = (endX - startX) / 2;
+        radiusY = (endY - startY) / 2;
+        useEllipse = true;
+    }
 
     for (let y = startY; y < endY; y += 4) {
       for (let x = startX; x < endX; x += 4) {
+        // Nếu có face bounding box, ta dùng hình elip để loại bỏ phần background ở 4 góc
+        if (useEllipse) {
+           const dx = x - centerX;
+           const dy = y - centerY;
+           if ((dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY) > 1.0) {
+               continue; 
+           }
+        }
+
         const i = (y * width + x) * 4;
         const r = data[i], g = data[i+1], b = data[i+2];
         const brightness = (r + g + b) / 3;
@@ -353,12 +406,23 @@ class SkinAnalysis extends Component {
         
         // Tạo canvas ẩn để scan ảnh upload
         const img = new Image();
-        img.onload = () => {
+        img.onload = async () => {
           const canvas = document.createElement('canvas');
           canvas.width = img.width;
           canvas.height = img.height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0);
+          
+          this.faceBoundingBox = null; // Reset trước
+          if (this._faceMesh) {
+             try {
+                // Lấy bounding box cho ảnh tĩnh
+                await this._faceMesh.send({image: img});
+             } catch(err) {
+                console.error("FaceMesh send error on upload", err);
+             }
+          }
+
           const hints = this.performHeuristicScan(canvas);
           this.apiAnalyzeSkin(imageData, hints);
         };
