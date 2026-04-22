@@ -370,7 +370,7 @@ class SkinAnalysis extends Component {
 
     // Tính toán dựa trên thực tế + Phạt điểm do mụn (Tỉ lệ thuận)
     const poreRate = Math.min(95, (darkPits / analyzedPixels) * 100 * 5 + overallStress * 0.8);
-    const textureRate = Math.min(95, (textureVariation / analyzedPixels) * 100 * 2.5 + overallStress * 1.5);
+    const textureRate = Math.min(95, (textureVariation / analyzedPixels) * 100 * 1.2 + overallStress * 0.4);
     const wrinkleRate = Math.min(95, (wrinkleEdges / analyzedPixels) * 100 * 6 + overallStress * 0.5);
     
     return { acneRate, poreRate, wrinkleRate, textureRate, acneZones };

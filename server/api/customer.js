@@ -418,7 +418,7 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
       conditions: conditionsText,
       concerns: {
         acne:      acneScore,
-        texture:   Math.min(100, Math.round((hints?.textureRate || 0) * 1.5 + 5)),
+        texture:   Math.min(100, Math.round((hints?.textureRate || 0) * 0.9 + 5)),
         pores:     poresScore,
         wrinkles:  Math.min(100, Math.round((hints?.wrinkleRate || 0) * 1.8 + 3)),
         hydration: estimatedHydration
