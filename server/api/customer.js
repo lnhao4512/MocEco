@@ -350,72 +350,59 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
         ? 'Da bạn đang có dấu hiệu mụn viêm. Cần tập trung vào làm sạch sâu và dưỡng ẩm cân bằng.'
         : 'Nền da tương đối ổn định. Duy trì làm sạch đúng cách và bảo vệ khỏi tia UV.');
 
-    // ─── GỢI Ý SẢN PHẨM THEO LOẠI MỤN AI ────────────────────────────────────
+    // ─── GỢI Ý SẢN PHẨM CÁ NHÂN HÓA THEO CHỈ SỐ DA (CÁ NHÂN HÓA CAO) ────────────────────────────────────
     const estimatedHydration = Math.max(30, Math.min(95, 100 - (hints?.textureRate || 0) * 0.8 - (hints?.poreRate || 0) * 0.5));
     let recommendedProducts = [];
 
-    // Hàm lấy ngẫu nhiên n sản phẩm từ mảng để kết quả soi da luôn đa dạng
-    const getRandom = (arr, n) => {
-      const shuffled = [...arr].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, n);
-    };
-
-    if (aiAcneType === 'Cyst' || acneScore > 65) {
-      // U nang / mụn nặng → cần trị liệu chuyên sâu
-      recommendedProducts = [
-        ...getRandom(productPool.cleansers, 1),
-        ...getRandom(productPool.serums, 2),
-        ...getRandom(productPool.creams, 1),
-        ...getRandom(productPool.others, 2)
-      ];
-    } else if (aiAcneType === 'Pustules' || (aiAcneType === 'Papules' && acneScore > 40)) {
-      // Mụn mủ / mụn sần nặng
-      recommendedProducts = [
-        ...getRandom(productPool.cleansers, 1),
-        ...getRandom(productPool.serums, 2),
-        ...getRandom(productPool.creams, 1),
-        ...getRandom(productPool.others, 1)
-      ];
-    } else if (aiAcneType === 'Papules') {
-      // Mụn sần nhẹ
-      recommendedProducts = [
-        ...getRandom(productPool.cleansers, 1),
-        ...getRandom(productPool.serums, 1),
-        ...getRandom(productPool.creams, 1),
-        ...getRandom(productPool.others, 2)
-      ];
-    } else if (aiAcneType === 'Blackheads' || poresScore > 40) {
-      // Mụn đầu đen / lỗ chân lông to
-      recommendedProducts = [
-        ...getRandom(productPool.cleansers, 2),
-        ...getRandom(productPool.serums, 1),
-        ...getRandom(productPool.creams, 1),
-        ...getRandom(productPool.others, 1)
-      ];
-    } else if (aiAcneType === 'Whiteheads') {
-      // Mụn đầu trắng
-      recommendedProducts = [
-        ...getRandom(productPool.cleansers, 1),
-        ...getRandom(productPool.serums, 1),
-        ...getRandom(productPool.creams, 2),
-        ...getRandom(productPool.others, 1)
-      ];
+    // 1. Chọn sữa rửa mặt phù hợp nhất
+    if (acneScore > 50 || aiAcneType === 'Cyst' || aiAcneType === 'Pustules') {
+      recommendedProducts.push(productPool.cleansers[0]); // LRP Effaclar (Mụn)
+    } else if (poresScore > 40 || aiAcneType === 'Blackheads') {
+      recommendedProducts.push(productPool.cleansers[3]); // Bioderma Sebium (Lỗ chân lông to)
     } else if (estimatedHydration < 45) {
-      // Da khô
-      recommendedProducts = [
-        ...getRandom(productPool.cleansers, 1),
-        ...getRandom(productPool.serums, 2),
-        ...getRandom(productPool.creams, 2),
-        ...getRandom(productPool.others, 1)
-      ];
+      recommendedProducts.push(productPool.cleansers[1]); // CeraVe Hydrating (Khô)
+    } else if (skinType === 'Da Nhạy Cảm') {
+      recommendedProducts.push(productPool.cleansers[2]); // Cetaphil Gentle (Nhạy cảm)
     } else {
-      // Da ổn định / nhạy cảm
-      recommendedProducts = [
-        ...getRandom(productPool.cleansers, 1),
-        ...getRandom(productPool.serums, 1),
-        ...getRandom(productPool.creams, 1),
-        ...getRandom(productPool.others, 2)
-      ];
+      recommendedProducts.push(productPool.cleansers[4]); // Simple Refreshing
+    }
+
+    // 2. Chọn serum (Được phép chọn 2 serum nếu có nhiều vấn đề)
+    if (acneScore > 55 || aiAcneType === 'Cyst') {
+      recommendedProducts.push(productPool.serums[4]); // Skin1004 Centella (Kháng viêm)
+    }
+    if ((hints?.wrinkleRate || 0) > 20) {
+      recommendedProducts.push(productPool.serums[0]); // LRP Hyalu B5 (Lão hóa/phục hồi)
+    } else if (poresScore > 45 || aiAcneType === 'Blackheads' || aiAcneType === 'Whiteheads') {
+      recommendedProducts.push(productPool.serums[2]); // Paula's Choice BHA (Mụn ẩn, lỗ chân lông)
+    } else if (estimatedHydration < 50 && recommendedProducts.length < 3) {
+      recommendedProducts.push(productPool.serums[3]); // Vichy 89 (Cấp nước)
+    } else if (recommendedProducts.length < 3) {
+      recommendedProducts.push(productPool.serums[5]); // L'Oreal Glycolic (Sáng da)
+    }
+
+    // 3. Chọn kem dưỡng
+    if (acneScore > 60 || aiAcneType === 'Cyst' || aiAcneType === 'Pustules') {
+      recommendedProducts.push(productPool.creams[2]); // Effaclar Duo+ M (Trị mụn)
+    } else if (skinType === 'Da Nhạy Cảm') {
+      recommendedProducts.push(productPool.creams[4]); // Bioderma Cicabio (Phục hồi)
+    } else if (poresScore > 35) {
+      recommendedProducts.push(productPool.creams[0]); // SVR Sebiaclear (Kiềm dầu)
+    } else if (estimatedHydration < 45) {
+      recommendedProducts.push(productPool.creams[1]); // Neutrogena Hydro Boost (Cấp nước)
+    } else {
+      recommendedProducts.push(productPool.creams[3]); // Hada Labo Advanced (Nuôi dưỡng)
+    }
+
+    // 4. Chọn sản phẩm bổ sung (Toner / Chống nắng)
+    if (poresScore > 45 || skinType === 'Da Dầu Mụn') {
+      recommendedProducts.push(productPool.others[4]); // Eucerin Dermopure Toner
+      recommendedProducts.push(productPool.others[0]); // Anessa Perfect UV
+    } else if (estimatedHydration < 50) {
+      recommendedProducts.push(productPool.others[3]); // Mamonde Rose Water Toner
+      recommendedProducts.push(productPool.others[1]); // LRP Anthelios Fluid
+    } else {
+      recommendedProducts.push(productPool.others[2]); // Eucerin Sun Serum
     }
 
     // ─── LƯU VÀO DATABASE ────────────────────────────────────────────────────
