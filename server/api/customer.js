@@ -354,27 +354,68 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
     const estimatedHydration = Math.max(30, Math.min(95, 100 - (hints?.textureRate || 0) * 0.8 - (hints?.poreRate || 0) * 0.5));
     let recommendedProducts = [];
 
+    // Hàm lấy ngẫu nhiên n sản phẩm từ mảng để kết quả soi da luôn đa dạng
+    const getRandom = (arr, n) => {
+      const shuffled = [...arr].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, n);
+    };
+
     if (aiAcneType === 'Cyst' || acneScore > 65) {
       // U nang / mụn nặng → cần trị liệu chuyên sâu
-      recommendedProducts = [productPool.cleansers[3], productPool.serums[4], productPool.creams[2], productPool.others[1], productPool.others[4]];
+      recommendedProducts = [
+        ...getRandom(productPool.cleansers, 1),
+        ...getRandom(productPool.serums, 2),
+        ...getRandom(productPool.creams, 1),
+        ...getRandom(productPool.others, 2)
+      ];
     } else if (aiAcneType === 'Pustules' || (aiAcneType === 'Papules' && acneScore > 40)) {
       // Mụn mủ / mụn sần nặng
-      recommendedProducts = [productPool.cleansers[0], productPool.creams[2], productPool.serums[0], productPool.serums[4], productPool.others[0]];
+      recommendedProducts = [
+        ...getRandom(productPool.cleansers, 1),
+        ...getRandom(productPool.serums, 2),
+        ...getRandom(productPool.creams, 1),
+        ...getRandom(productPool.others, 1)
+      ];
     } else if (aiAcneType === 'Papules') {
       // Mụn sần nhẹ
-      recommendedProducts = [productPool.cleansers[0], productPool.serums[4], productPool.creams[0], productPool.others[1]];
+      recommendedProducts = [
+        ...getRandom(productPool.cleansers, 1),
+        ...getRandom(productPool.serums, 1),
+        ...getRandom(productPool.creams, 1),
+        ...getRandom(productPool.others, 2)
+      ];
     } else if (aiAcneType === 'Blackheads' || poresScore > 40) {
       // Mụn đầu đen / lỗ chân lông to
-      recommendedProducts = [productPool.cleansers[3], productPool.serums[2], productPool.creams[0], productPool.others[4], productPool.others[0]];
+      recommendedProducts = [
+        ...getRandom(productPool.cleansers, 2),
+        ...getRandom(productPool.serums, 1),
+        ...getRandom(productPool.creams, 1),
+        ...getRandom(productPool.others, 1)
+      ];
     } else if (aiAcneType === 'Whiteheads') {
       // Mụn đầu trắng
-      recommendedProducts = [productPool.cleansers[4], productPool.serums[2], productPool.creams[1], productPool.others[1]];
+      recommendedProducts = [
+        ...getRandom(productPool.cleansers, 1),
+        ...getRandom(productPool.serums, 1),
+        ...getRandom(productPool.creams, 2),
+        ...getRandom(productPool.others, 1)
+      ];
     } else if (estimatedHydration < 45) {
       // Da khô
-      recommendedProducts = [productPool.cleansers[1], productPool.serums[1], productPool.serums[3], productPool.creams[3], productPool.others[1]];
+      recommendedProducts = [
+        ...getRandom(productPool.cleansers, 1),
+        ...getRandom(productPool.serums, 2),
+        ...getRandom(productPool.creams, 2),
+        ...getRandom(productPool.others, 1)
+      ];
     } else {
       // Da ổn định / nhạy cảm
-      recommendedProducts = [productPool.cleansers[2], productPool.serums[4], productPool.creams[4], productPool.others[1]];
+      recommendedProducts = [
+        ...getRandom(productPool.cleansers, 1),
+        ...getRandom(productPool.serums, 1),
+        ...getRandom(productPool.creams, 1),
+        ...getRandom(productPool.others, 2)
+      ];
     }
 
     // ─── LƯU VÀO DATABASE ────────────────────────────────────────────────────
