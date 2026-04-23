@@ -303,7 +303,20 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
       aiConfidence = aiResult.confidence;
       
       // Lấy trực tiếp từ model (đã được map theo dữ liệu train)
-      acneScore = Math.round((aiResult.acne_score_hint || 30) * aiConfidence + (1 - aiConfidence) * 10);
+      let baseAcne = (aiResult.acne_score_hint || 30) * aiConfidence + (1 - aiConfidence) * 10;
+      
+      // FIX: Tránh việc điểm số bị đóng cứng ở mức 80 (ra đúng 20% sạch mụn) cho tất cả mọi người do model dự đoán Cyst
+      // Kết hợp kết quả phân tích Pixel thực tế từ hints để cá nhân hóa điểm số
+      if (hints && hints.acneRate !== undefined) {
+         let dynamicAcne = Math.min(45, hints.acneRate * 1.2); 
+         acneScore = Math.round((baseAcne * 0.4) + dynamicAcne + 5); // Phối hợp AI và thực tế
+      } else {
+         acneScore = Math.round(baseAcne);
+      }
+      
+      // Không để điểm max out cứng ngắc
+      acneScore = Math.max(5, Math.min(78, acneScore));
+
       textureScore = Math.round((aiResult.texture_score_hint || 20) * aiConfidence + (1 - aiConfidence) * 10);
       poresScore = Math.round((aiResult.pores_score_hint || 25) * aiConfidence + (1 - aiConfidence) * 10);
       
@@ -312,9 +325,10 @@ router.post('/skin-analysis', JwtUtil.checkToken, async function (req, res) {
       // ═══ FALLBACK: HEURISTIC PIXEL SCAN (chỉ khi model không chạy được) ═══
       console.log('[AI] Model unavailable, using pixel heuristic fallback');
       if (hints) {
-        acneScore = Math.min(80, Math.round((hints.acneRate || 0) * 3.5 + 5));
-        textureScore = Math.min(80, Math.round((hints.textureRate || 0) * 0.9 + 5));
-        poresScore = Math.min(100, Math.round((hints.poreRate || 0) * 2.2 + 5));
+        // FIX: Giảm multiplier từ 3.5 xuống 1.5 để không bị chạm nóc 80
+        acneScore = Math.min(75, Math.round((hints.acneRate || 0) * 1.5 + 5));
+        textureScore = Math.min(75, Math.round((hints.textureRate || 0) * 0.9 + 5));
+        poresScore = Math.min(80, Math.round((hints.poreRate || 0) * 1.5 + 5));
       }
     }
 
