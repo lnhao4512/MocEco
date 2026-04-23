@@ -39,7 +39,7 @@ class App extends Component {
                 💔 Trang web tụi mình xin dừng hoạt động.
               </h1>
               <p style={{ fontSize: '1.25rem', color: '#444', lineHeight: '1.6', margin: 0 }}>
-                Cảm ơn bạn đã từng ghé và trải nghiệm, chúc bạn có 1 ngày tốt lành và thành công !
+                Cảm ơn bạn đã từng ghé và trải nghiệm, chúc bạn một ngày tốt lành và luôn thành công trong học tập cũng như công việc! &lt; VLU
               </p>
             </div>
           </div>
