@@ -1,112 +1,50 @@
-### A CNN-Based Approach for Image Recognition and Categorizing Facial Skin Conditions
+# Nền tảng Thương mại Điện tử Mộc-EcoPure
 
-This repository contains a Convolutional Neural Network (CNN) model for classifying facial images into five skin condition categories:  
+Mộc-EcoPure là một nền tảng thương mại điện tử hiện đại, toàn diện được xây dựng bằng **MERN stack (MongoDB, Express.js, React, Node.js)** và tích hợp **Trí tuệ Nhân tạo (AI) bằng Python** để phân tích da chuyên sâu. Dự án này được thiết kế nhằm mang lại trải nghiệm mua sắm liền mạch cho các sản phẩm chăm sóc da tự nhiên và thân thiện với môi trường, được cá nhân hóa cho từng khách hàng thông qua các đề xuất từ AI.
 
-- **Acne**  
-- **Hyperpigmentation/Discoloration**  
-- **Oily Skin**  
-- **Dry Skin**  
-- **Normal Skin**  
+## 🚀 Các Tính Năng Nổi Bật
 
-The model utilizes a **Gradio interface** to provide a user-friendly platform for predictions, enabling users to upload a facial image and receive the skin condition classification.
+### 1. Hệ Thống Phân Tích Da & Đề Xuất Bằng AI
+- **Phân Tích Khuôn Mặt:** Tích hợp mô hình học máy (Machine Learning) bằng Python (sử dụng các thư viện như OpenCV, TensorFlow/Keras) để phân tích hình ảnh khuôn mặt do người dùng tải lên.
+- **Phát Hiện & Chấm Điểm Mụn:** Nhận diện mụn chính xác và đưa ra điểm số/phần trăm về tình trạng sức khỏe của da.
+- **Đề Xuất Sản Phẩm Động (Dynamic Recommendations):** Tự động gợi ý lộ trình chăm sóc da cá nhân hóa và các sản phẩm cụ thể dựa trên kết quả phân tích AI riêng biệt của từng người dùng (ví dụ: các chiến lược Đề xuất 1 hãng, Hỗn hợp, hoặc Luân phiên).
 
----
+### 2. Chức Năng Thương Mại Điện Tử Hoàn Chỉnh
+- **Quản Lý Sản Phẩm:** Xử lý toàn bộ vòng đời sản phẩm bao gồm danh mục, kho hàng và giá cả động.
+- **Điều Hướng Chuyên Sâu:** Tích hợp Mega Menu 3 cấp độ giúp người dùng dễ dàng tìm kiếm và khám phá sản phẩm.
+- **Giỏ Hàng & Thanh Toán:** Quản lý giỏ hàng mượt mà, thân thiện trên mọi thiết bị và quy trình thanh toán (checkout) tối ưu.
+- **Theo Dõi Đơn Hàng:** Người dùng có thể xem lịch sử mua hàng và trạng thái đơn hàng hiện tại.
 
-## Features  
+### 3. Trang Quản Trị (Admin Dashboard)
+- **Kiểm Soát Tập Trung:** Một ứng dụng React dành riêng cho quản trị viên (`client-admin`) để quản lý cửa hàng.
+- **Quản Lý Dữ Liệu:** Giao diện trực quan để thêm, sửa, xóa sản phẩm và danh mục.
+- **Xử Lý Đơn Hàng:** Công cụ để quản lý các đơn đặt hàng của khách và cập nhật trạng thái giao hàng.
 
-- **CNN Architecture:** Designed and trained for accurate classification.  
-- **Gradio Interface:** Intuitive web-based UI for uploading images and receiving predictions.  
-- **Custom Dataset:** Images collected and labeled for each skin condition.  
-- **Python Implementation:** Easy-to-follow, modularized codebase for training, testing, and deploying the model.  
+## 🛠️ Công Nghệ Sử Dụng
 
----
+**Frontend (Giao diện người dùng):**
+- **React.js:** Dùng để xây dựng cả giao diện dành cho khách hàng (`client-customer`) và trang quản trị (`client-admin`).
+- **React Router:** Điều hướng trang mượt mà theo kiến trúc SPA (Single-page application).
+- **Context API:** Quản lý state (trạng thái) hiệu quả giữa các component.
+- **CSS3 / HTML5:** Thiết kế giao diện hiện đại, đẹp mắt và Responsive (tương thích mọi kích thước màn hình).
 
-## Installation  
+**Backend (Hệ thống máy chủ):**
+- **Node.js & Express.js:** Kiến trúc API RESTful mạnh mẽ phục vụ cho cả hai ứng dụng frontend.
+- **Python:** Giao tiếp liên tiến trình (IPC) để chạy mô hình AI phân tích da song song với server Node.js.
 
-1. **Clone the Repository**  
-   ```bash  
-   git clone https://github.com/ruru-lyy/skin-classification-cnn.git  
-   cd skin-classification-cnn  
-   ```  
+**Cơ Sở Dữ Liệu:**
+- **MongoDB:** Cơ sở dữ liệu NoSQL linh hoạt, mở rộng tốt, dùng để lưu trữ sản phẩm, người dùng, đơn hàng và lịch sử phân tích da.
 
-2. **Install Dependencies**  
-   Ensure you have Python 3.8 or higher installed. Install the required packages using:  
-   ```bash  
-   pip install -r requirements.txt  
-   ```  
+**Học Máy (Machine Learning - AI):**
+- **Python Data Science Stack:** Sử dụng `train_model.py` và Jupyter notebooks (`acne_detection.ipynb`) để huấn luyện mô hình nhận diện mụn.
 
-3. **Download Dataset**  
-   Collect and organize facial images into the `data/` directory with the following structure:  
-   ```  
-   data/  
-   ├── sample_acne/  
-   ├── sample_hyperpigmentation/  
-   ├── sample_oily/  
-   ├── sample_dry/  
-   └── sample_normal/  
-   ```  
+## 💡 Điểm Sáng Cho CV / Portfolio
 
-4. **Train the Model (Optional)**  
-   To train the CNN on your dataset, run:  
-   ```bash  
-   python train.py  
-   ```  
-   The trained model will be saved in the `models/` directory.  
+Dự án này thể hiện năng lực và kỹ năng của bạn trong:
+- **Full-Stack Development:** Kết nối thành công kiến trúc backend phức tạp với giao diện frontend tương tác tốt.
+- **System Integration (Tích hợp hệ thống):** Kết nối web server Node.js với script Machine Learning Python để mang lại tính năng AI phân tích ảnh thực tế.
+- **Problem Solving (Giải quyết vấn đề):** Xử lý các thách thức khó như lỗi OOM (Hết bộ nhớ) trên server khi chạy AI, giao tiếp giữa các tiến trình (IPC), và quản lý hiệu năng.
+- **UI/UX Design:** Tạo ra một giao diện người dùng bóng bẩy, thu hút, đáp ứng tiêu chuẩn của một thương hiệu thương mại điện tử hiện đại.
 
 ---
-
-## Model Architecture  
-
-The CNN model uses the following components:  
-- Convolutional layers with ReLU activations.  
-- Max-pooling layers for dimensionality reduction.  
-- Dropout for regularization.  
-- Fully connected layers for classification.
-  
-![Model Architecture](assets/cnn-arch.png)  
-
-For more details, refer to `main.py`.  
-
----
-
-## Usage  
-
-### 1. **Run the Gradio Interface**  
-Start the Gradio app for predictions:  
-```bash  
-python app.py  
-```  
-The interface will open in your default web browser or display a local URL in the terminal.  
-
-### 2. **Upload Image**  
-Use the Gradio UI to upload an image of a face. The model will predict the skin condition and display the result.  
-
-
----
-
-## App Interface
-
-![Gradio Example](assets/demo.png)  
-
----
-## Future Enhancements  
-
-- Increase the dataset size for improved accuracy.  
-- Integrate additional features such as skin-care recommendations based on predictions.  
-- Deploy the model on the cloud for global access.  
-
----
-
-## Contributing  
-
-Contributions are welcome! Please create a pull request or open an issue if you encounter any bugs or have feature suggestions.  
-
----
-
-## License  
-
-This project is licensed under the MIT License. See the `LICENSE` file for more details.  
-
----  
-
-Feel free to use and adapt this project. If you find it helpful, please give this repository a ⭐ on GitHub! 😊
+*Dự án được xây dựng và phát triển như một đồ án/portfolio chuyên nghiệp.*

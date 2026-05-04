@@ -60,7 +60,7 @@ valid_gen = val_datagen.flow_from_directory(
 
 NUM_CLASSES = train_gen.num_classes
 CLASS_NAMES = list(train_gen.class_indices.keys())
-print(f"\n✅ Tim thay {NUM_CLASSES} lop: {CLASS_NAMES}")
+print(f"\n[OK] Tim thay {NUM_CLASSES} lop: {CLASS_NAMES}")
 print(f"   Train: {train_gen.samples} anh | Valid: {valid_gen.samples} anh\n")
 
 # ─── XAY DUNG MO HINH (Transfer Learning: MobileNetV2) ───────────────────────
@@ -118,7 +118,7 @@ callbacks = [
 ]
 
 # ─── HUAN LUYEN ───────────────────────────────────────────────────────────────
-print("\n🚀 Bat dau huan luyen...\n")
+print("\n[TRAINING] Bat dau huan luyen...\n")
 history = model.fit(
     train_gen,
     epochs=EPOCHS,
@@ -136,10 +136,10 @@ if os.path.exists(TEST_DIR):
         shuffle=False
     )
     test_loss, test_acc = model.evaluate(test_gen, verbose=1)
-    print(f"\n🎯 Test Accuracy: {test_acc*100:.2f}%")
+    print(f"\n[TEST] Test Accuracy: {test_acc*100:.2f}%")
 
 # ─── LUU VA IN KET QUA ────────────────────────────────────────────────────────
-print(f"\n✅ Mo hinh da luu tai: {MODEL_OUT}")
-print("\n📋 Class mapping (dung cho predict.py):")
+print(f"\n[DONE] Mo hinh da luu tai: {MODEL_OUT}")
+print("\n[CLASS MAP] (dung cho predict.py):")
 for name, idx in train_gen.class_indices.items():
     print(f"   {idx}: '{name}'")
